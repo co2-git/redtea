@@ -28,9 +28,17 @@ function describe(descriptor, stories) {
         if (typeof stories === 'function') {
           (function () {
             var _stories = [];
-            stories(function (label, promise) {
+            var it = function it(label, promise) {
               _stories.push(_defineProperty({}, label, promise));
-            });
+            };
+            it.describe = function (story, assert) {
+              var _stories = [];
+              assert(function (label, promise) {
+                _stories.push(_defineProperty({}, label, promise));
+              });
+              it(story, _stories);
+            };
+            stories(it);
             stories = _stories;
           })();
         }

@@ -12,9 +12,17 @@ function describe ( descriptor, stories, options = {} ) {
 
       if ( typeof stories === 'function' ) {
         const _stories = [];
-        stories((label, promise) => {
+        const it = (label, promise) => {
           _stories.push({ [label] : promise })
-        });
+        };
+        it.describe = function (story, assert) {
+          const _stories = [];
+          assert((label, promise) => {
+            _stories.push({ [label] : promise })
+          });
+          it(story, _stories);
+        };
+        stories(it);
         stories = _stories;
       }
 
