@@ -1,6 +1,6 @@
 {
   "name": "redtea",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "test": "node dist/bin/index.js dist/test"
   },
   "bin" : {
-    "redtea" : "node dist/bin/index.js"
+    "redtea" : "dist/bin/index.js"
   },
   "author": "",
   "license": "ISC",
