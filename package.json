@@ -1,0 +1,22 @@
+{
+  "name": "redtea",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "babel --modules common app --out-dir dist",
+    "test": "node dist/bin/index.js dist/test"
+  },
+  "bin" : {
+    "redtea" : "node dist/bin/index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "colors": "^1.1.2"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.3.15",
+    "should": "^7.1.1"
+  }
+}
