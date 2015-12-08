@@ -1,11 +1,12 @@
 {
   "name": "redtea",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
     "build": "babel --modules common app --out-dir dist",
-    "test": "node dist/bin/index.js dist/test"
+    "test": "node dist/bin/index.js dist/test",
+    "prepublish": "npm test"
   },
   "bin" : {
     "redtea" : "dist/bin/index.js"

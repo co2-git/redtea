@@ -98,5 +98,6 @@ _fs2['default'].readdir(dir, function (error, files) {
     console.log('  ', '                                                          '.bgRed);
     console.log('  ', '                  TEST FAILED                             '.bgRed.bold);
     console.log('  ', '                                                          '.bgRed);
+    process.exit(1);
   });
 });

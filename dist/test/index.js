@@ -19,9 +19,11 @@ function test() {
     it('should be cool', function (ok) {
       return ok();
     });
-    it('should be nested', [{ 'should be true': function shouldBeTrue(ok) {
+    it.describe('should be nested', function (it) {
+      it('should be supa cool', function (ok) {
         return ok();
-      } }]);
+      });
+    });
   });
 }
 
