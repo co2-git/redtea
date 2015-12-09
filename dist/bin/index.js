@@ -5,9 +5,9 @@
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var _fs = require('fs');
+var _fsExtra = require('fs-extra');
 
-var _fs2 = _interopRequireDefault(_fs);
+var _fsExtra2 = _interopRequireDefault(_fsExtra);
 
 var _path = require('path');
 
@@ -32,19 +32,17 @@ var begin = Date.now();
 
 console.log('redtea v'.red.underline + _packageJson2['default'].version.toString().red.underline);
 
+var files = [];
+
 var dir = _path2['default'].join(process.cwd(), process.argv[2] || 'test');
 
-_fs2['default'].readdir(dir, function (error, files) {
-  if (error) {
-    console.log(error.stack.yellow);
-    process.exit(1);
+_fsExtra2['default'].walk(dir).on('data', function (file) {
+  if (file.stats.isFile()) {
+    files.push(file.path);
   }
-
-  (0, _libSequencer2['default'])(files.filter(function (file) {
-    return (/\.js$/.test(file)
-    );
-  }).map(function (file) {
-    return require(dir + '/' + file);
+}).on('end', function () {
+  (0, _libSequencer2['default'])(files.map(function (file) {
+    return require(file);
   }).map(function (test) {
     return function (props) {
       return new Promise(function (ok, ko) {

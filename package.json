@@ -1,6 +1,6 @@
 {
   "name": "redtea",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -8,13 +8,14 @@
     "test": "node dist/bin/index.js dist/test",
     "prepublish": "npm test"
   },
-  "bin" : {
-    "redtea" : "dist/bin/index.js"
+  "bin": {
+    "redtea": "dist/bin/index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "colors": "^1.1.2"
+    "colors": "^1.1.2",
+    "fs-extra": "^0.26.2"
   },
   "devDependencies": {
     "babel-cli": "^6.3.15",
