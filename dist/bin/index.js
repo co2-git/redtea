@@ -36,6 +36,16 @@ var files = [];
 
 var dir = _path2['default'].join(process.cwd(), process.argv[2] || 'test');
 
+var done = false;
+
+process.on('exit', function () {
+  if (!done) {
+    console.log('  ', '                                                          '.bgRed);
+    console.log('  ', '                  TEST FAILED   (EXIT)                      '.bgRed.bold);
+    console.log('  ', '                                                          '.bgRed);
+  }
+});
+
 _fsExtra2['default'].walk(dir).on('data', function (file) {
   if (file.stats.isFile()) {
     files.push(file.path);
@@ -86,6 +96,8 @@ _fsExtra2['default'].walk(dir).on('data', function (file) {
       console.log('  ', '                                                          '.bgGreen);
     }
 
+    done = true;
+
     process.exit(failed);
   }, function (error) {
     if (error.stack) {
@@ -96,6 +108,9 @@ _fsExtra2['default'].walk(dir).on('data', function (file) {
     console.log('  ', '                                                          '.bgRed);
     console.log('  ', '                  TEST FAILED                             '.bgRed.bold);
     console.log('  ', '                                                          '.bgRed);
+
+    done = true;
+
     process.exit(1);
   });
 });

@@ -17,6 +17,16 @@ const files = [];
 
 const dir = path.join(process.cwd(), process.argv[2] || 'test');
 
+let done = false;
+
+process.on('exit', () => {
+  if ( ! done ) {
+    console.log('  ', '                                                          '.bgRed);
+    console.log('  ', `                  TEST FAILED   (EXIT)                      `.bgRed.bold);
+    console.log('  ', '                                                          '.bgRed);
+  }
+});
+
 fs.walk(dir)
   .on('data', file => {
     if ( file.stats.isFile() ) {
@@ -76,6 +86,8 @@ fs.walk(dir)
           console.log('  ', '                                                          '.bgGreen);
         }
 
+        done = true;
+
         process.exit(failed);
       },
       error => {
@@ -88,6 +100,9 @@ fs.walk(dir)
         console.log('  ', '                                                          '.bgRed);
         console.log('  ', `                  TEST FAILED                             `.bgRed.bold);
         console.log('  ', '                                                          '.bgRed);
+
+        done = true;
+
         process.exit(1);
       }
     );
