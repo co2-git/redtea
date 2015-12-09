@@ -4,12 +4,30 @@ import describe from '../';
 import should from 'should';
 
 function test () {
-  return describe ( 'New format' , it => {
-    it ( 'should be cool' , ok => ok() );
-    it.describe ( 'should be nested' , it => {
-      it ( 'should be supa cool' , ok => ok() );
-    });
-  });
+
+  return describe ( 'redtea' , it => {
+
+    it ( 'should fulfill' , ok => ok() );
+
+    it ( 'Nest' , [
+      it => {
+
+        it ( 'should be true' , ok => ok() );
+
+        it ( 'should deep nest' , [
+
+          it => {
+
+            it ( 'should be cool' , ok => ok() );
+
+          }
+
+        ]);
+
+      }
+    ] );
+
+  } );
 }
 
 export default test;

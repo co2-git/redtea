@@ -15,15 +15,26 @@ var _should = require('should');
 var _should2 = _interopRequireDefault(_should);
 
 function test() {
-  return (0, _2['default'])('New format', function (it) {
-    it('should be cool', function (ok) {
+
+  return (0, _2['default'])('redtea', function (it) {
+
+    it('should fulfill', function (ok) {
       return ok();
     });
-    it.describe('should be nested', function (it) {
-      it('should be supa cool', function (ok) {
+
+    it('Nest', [function (it) {
+
+      it('should be true', function (ok) {
         return ok();
       });
-    });
+
+      it('should deep nest', [function (it) {
+
+        it('should be cool', function (ok) {
+          return ok();
+        });
+      }]);
+    }]);
   });
 }
 

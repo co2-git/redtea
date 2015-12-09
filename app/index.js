@@ -2,8 +2,15 @@
 
 import colors from 'colors';
 
-function it (label, promise) {
-  return { [label] : promise };
+function it (label, promise, stories) {
+  if ( typeof promise === 'function' ) {
+    stories.push({ [label] : promise });
+  }
+  else if ( Array.isArray(promise) ) {
+    const _stories = [];
+    promise.map(promise => promise((label, promise) => it(label, promise, _stories)));
+    stories.push({ [label] : _stories });
+  }
 }
 
 function describe ( descriptor, stories, options = {} ) {
@@ -12,17 +19,7 @@ function describe ( descriptor, stories, options = {} ) {
 
       if ( typeof stories === 'function' ) {
         const _stories = [];
-        const it = (label, promise) => {
-          _stories.push({ [label] : promise })
-        };
-        it.describe = function (story, assert) {
-          const _stories = [];
-          assert((label, promise) => {
-            _stories.push({ [label] : promise })
-          });
-          it(story, _stories);
-        };
-        stories(it);
+        stories((label, promise) => it(label, promise, _stories));
         stories = _stories;
       }
 

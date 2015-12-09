@@ -14,8 +14,20 @@ var _colors = require('colors');
 
 var _colors2 = _interopRequireDefault(_colors);
 
-function it(label, promise) {
-  return _defineProperty({}, label, promise);
+function it(label, promise, stories) {
+  if (typeof promise === 'function') {
+    stories.push(_defineProperty({}, label, promise));
+  } else if (Array.isArray(promise)) {
+    (function () {
+      var _stories = [];
+      promise.map(function (promise) {
+        return promise(function (label, promise) {
+          return it(label, promise, _stories);
+        });
+      });
+      stories.push(_defineProperty({}, label, _stories));
+    })();
+  }
 }
 
 function describe(descriptor, stories) {
@@ -28,17 +40,9 @@ function describe(descriptor, stories) {
         if (typeof stories === 'function') {
           (function () {
             var _stories = [];
-            var it = function it(label, promise) {
-              _stories.push(_defineProperty({}, label, promise));
-            };
-            it.describe = function (story, assert) {
-              var _stories = [];
-              assert(function (label, promise) {
-                _stories.push(_defineProperty({}, label, promise));
-              });
-              it(story, _stories);
-            };
-            stories(it);
+            stories(function (label, promise) {
+              return it(label, promise, _stories);
+            });
             stories = _stories;
           })();
         }
