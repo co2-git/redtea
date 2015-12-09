@@ -17,9 +17,9 @@ function test (props) {
   return describe('life' , it => {
     it('should be a party', fulfill => fulfill());
 
-    it.describe('should nest', it => {
+    it.describe('should nest', [ it => {
       it('should fulfill', fulfill => fulfill())
-    });
+    } ]);
   });
 }
 
