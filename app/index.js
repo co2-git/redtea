@@ -11,6 +11,9 @@ function it (label, promise, stories) {
     promise.map(promise => promise((label, promise) => it(label, promise, _stories)));
     stories.push({ [label] : _stories });
   }
+  else if ( promise instanceof Describer ) {
+    stories.push({ [label] : promise });
+  }
 }
 
 function describe ( descriptor, stories, options = {} ) {
@@ -171,7 +174,11 @@ function describe ( descriptor, stories, options = {} ) {
 
 class Describer {
   constructor (func) {
-    this.func = func;
+    this.func = () => {
+      const stories = [];
+      func()((label, promise) => it(label, promise, stories));
+      return stories;
+    };
   }
 }
 

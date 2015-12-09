@@ -27,6 +27,8 @@ function it(label, promise, stories) {
       });
       stories.push(_defineProperty({}, label, _stories));
     })();
+  } else if (promise instanceof Describer) {
+    stories.push(_defineProperty({}, label, promise));
   }
 }
 
@@ -177,7 +179,13 @@ function describe(descriptor, stories) {
 var Describer = function Describer(func) {
   _classCallCheck(this, Describer);
 
-  this.func = func;
+  this.func = function () {
+    var stories = [];
+    func()(function (label, promise) {
+      return it(label, promise, stories);
+    });
+    return stories;
+  };
 };
 
 describe.Describer = Describer;

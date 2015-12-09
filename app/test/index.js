@@ -3,6 +3,15 @@
 import describe from '../';
 import should from 'should';
 
+function reusable (foo) {
+  return it => {
+    it('should be true value', ok => {
+      foo.should.be.true();
+      ok();
+    });
+  };
+}
+
 function test () {
 
   return describe ( 'redtea' , it => {
@@ -26,6 +35,8 @@ function test () {
 
       }
     ] );
+
+    it ( 'should reuse' , describe.use(() => reusable(true)) );
 
   } );
 }
