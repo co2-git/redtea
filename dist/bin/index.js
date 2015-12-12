@@ -9,9 +9,9 @@ var _fsExtra = require('fs-extra');
 
 var _fsExtra2 = _interopRequireDefault(_fsExtra);
 
-var _path = require('path');
+var _path2 = require('path');
 
-var _path2 = _interopRequireDefault(_path);
+var _path3 = _interopRequireDefault(_path2);
 
 var _colors = require('colors');
 
@@ -25,6 +25,8 @@ var _packageJson = require('../../package.json');
 
 var _packageJson2 = _interopRequireDefault(_packageJson);
 
+process.title = 'redtea';
+
 var tests = 0,
     passed = 0,
     failed = 0;
@@ -34,21 +36,35 @@ console.log('redtea v'.red.underline + _packageJson2['default'].version.toString
 
 var files = [];
 
-var dir = _path2['default'].join(process.cwd(), process.argv[2] || 'test');
+var dir = _path3['default'].join(process.cwd(), process.argv[2] || 'test');
 
 var done = false;
 
 process.on('exit', function () {
   if (!done) {
     console.log('  ', '                                                          '.bgRed);
-    console.log('  ', '                  TEST FAILED   (EXIT)                      '.bgRed.bold);
+    console.log('  ', '                 TEST FAILED   (EXIT)                     '.bgRed.bold);
     console.log('  ', '                                                          '.bgRed);
   }
 });
 
 _fsExtra2['default'].walk(dir).on('data', function (file) {
   if (file.stats.isFile()) {
-    files.push(file.path);
+    (function () {
+      var _path = file.path.split(_path3['default'].sep);
+
+      var _dir = dir.split(_path3['default'].sep);
+
+      _path = _path.filter(function (p, index) {
+        return index >= _dir.length;
+      });
+
+      if (_path.every(function (p) {
+        return !/^\./.test(p);
+      })) {
+        files.push(file.path);
+      }
+    })();
   }
 }).on('end', function () {
   (0, _libSequencer2['default'])(files.map(function (file) {

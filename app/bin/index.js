@@ -8,6 +8,8 @@ import colors           from 'colors';
 import sequencer        from '../lib/sequencer';
 import packageJSON      from '../../package.json';
 
+process.title = 'redtea';
+
 let tests = 0, passed = 0, failed = 0;
 const begin = Date.now();
 
@@ -22,7 +24,7 @@ let done = false;
 process.on('exit', () => {
   if ( ! done ) {
     console.log('  ', '                                                          '.bgRed);
-    console.log('  ', `                  TEST FAILED   (EXIT)                      `.bgRed.bold);
+    console.log('  ', `                 TEST FAILED   (EXIT)                     `.bgRed.bold);
     console.log('  ', '                                                          '.bgRed);
   }
 });
@@ -30,7 +32,15 @@ process.on('exit', () => {
 fs.walk(dir)
   .on('data', file => {
     if ( file.stats.isFile() ) {
-      files.push(file.path);
+      let _path = file.path.split(path.sep);
+
+      const _dir = dir.split(path.sep);
+
+      _path = _path.filter((p, index) => index >= _dir.length);
+
+      if ( _path.every(p => ! /^\./.test(p)) ) {
+        files.push(file.path);
+      }
     }
   })
   .on('end', () => {
