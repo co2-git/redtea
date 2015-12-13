@@ -46,10 +46,20 @@ fs.walk(dir)
   .on('end', () => {
     sequencer(
       files
-        .map(file => require(file))
-        .map(test => props => new Promise((ok, ko) => {
+        .map((file, index) => require(file))
+        .map((test, index) => props => new Promise((ok, ko) => {
           try {
-            test(props).then(results => {
+            if ( typeof test !== 'function' ) {
+              return ko(new Error(`Test ${files[index]} must be a function`));
+            }
+
+            const promise = test(props);
+
+            if ( typeof promise.then !== 'function' ) {
+              return ko(new Error(`Test ${files[index]} must be a function`));
+            }
+
+            promise.then(results => {
               tests += results.tests;
               passed += results.passed;
               failed += results.failed;

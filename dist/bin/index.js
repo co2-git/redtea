@@ -67,13 +67,23 @@ _fsExtra2['default'].walk(dir).on('data', function (file) {
     })();
   }
 }).on('end', function () {
-  (0, _libSequencer2['default'])(files.map(function (file) {
+  (0, _libSequencer2['default'])(files.map(function (file, index) {
     return require(file);
-  }).map(function (test) {
+  }).map(function (test, index) {
     return function (props) {
       return new Promise(function (ok, ko) {
         try {
-          test(props).then(function (results) {
+          if (typeof test !== 'function') {
+            return ko(new Error('Test ' + files[index] + ' must be a function'));
+          }
+
+          var promise = test(props);
+
+          if (typeof promise.then !== 'function') {
+            return ko(new Error('Test ' + files[index] + ' must be a function'));
+          }
+
+          promise.then(function (results) {
             tests += results.tests;
             passed += results.passed;
             failed += results.failed;
