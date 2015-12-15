@@ -14,21 +14,30 @@ var _colors = require('colors');
 
 var _colors2 = _interopRequireDefault(_colors);
 
-function it(label, promise, stories) {
+function it(label, promise) {
+  var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+  var stories = arguments.length <= 3 || arguments[3] === undefined ? [] : arguments[3];
+
   if (typeof promise === 'function') {
-    stories.push(_defineProperty({}, label, promise));
+    var _stories$push;
+
+    stories.push((_stories$push = {}, _defineProperty(_stories$push, label, promise), _defineProperty(_stories$push, 'options', options), _stories$push));
   } else if (Array.isArray(promise)) {
+    var _stories$push2;
+
     (function () {
       var _stories = [];
       promise.map(function (promise) {
         return promise(function (label, promise) {
-          return it(label, promise, _stories);
+          return it(label, promise, options || {}, _stories);
         });
       });
-      stories.push(_defineProperty({}, label, _stories));
+      stories.push((_stories$push2 = {}, _defineProperty(_stories$push2, label, _stories), _defineProperty(_stories$push2, 'options', options), _stories$push2));
     })();
   } else if (promise instanceof Describer) {
-    stories.push(_defineProperty({}, label, promise));
+    var _stories$push3;
+
+    stories.push((_stories$push3 = {}, _defineProperty(_stories$push3, label, promise), _defineProperty(_stories$push3, 'options', options), _stories$push3));
   }
 }
 
@@ -43,7 +52,8 @@ function describe(descriptor, stories) {
           (function () {
             var _stories = [];
             stories(function (label, promise) {
-              return it(label, promise, _stories);
+              var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+              return it(label, promise, options, _stories);
             });
             stories = _stories;
           })();
@@ -82,6 +92,14 @@ function describe(descriptor, stories) {
 
                 var storyDescriptor = Object.keys(stories[cursor])[0];
 
+                /**
+                 *  {
+                 *    timeout : <Number> - milliseconds
+                 *  }
+                 */
+
+                var storyOptions = stories[cursor].options || {};
+
                 var story = stories[cursor][storyDescriptor];
 
                 if (story instanceof Describer) {
@@ -94,7 +112,32 @@ function describe(descriptor, stories) {
                   isNested = true;
                 } else {
                   promise = new Promise(function (ok, ko) {
-                    story(ok, ko);
+
+                    var fulfilled = null;
+
+                    if ('timeout' in storyOptions) {
+                      setTimeout(function () {
+                        if (fulfilled === null) {
+                          ko(new Error('Could not fulfill test, script timed out after ' + storyOptions.timeout + ' milliseconds'));
+                        }
+                      }, storyOptions.timeout);
+                    }
+
+                    story(function () {
+                      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+                        args[_key] = arguments[_key];
+                      }
+
+                      fulfilled = true;
+                      ok.apply(null, args);
+                    }, function () {
+                      for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+                        args[_key2] = arguments[_key2];
+                      }
+
+                      fulfilled = false;
+                      ko.apply(null, args);
+                    });
                   });
                 }
 
@@ -182,7 +225,8 @@ var Describer = function Describer(func) {
   this.func = function () {
     var stories = [];
     func()(function (label, promise) {
-      return it(label, promise, stories);
+      var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+      return it(label, promise, options, stories);
     });
     return stories;
   };

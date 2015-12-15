@@ -2,17 +2,17 @@
 
 import colors from 'colors';
 
-function it (label, promise, stories) {
+function it (label, promise, options = {}, stories = []) {
   if ( typeof promise === 'function' ) {
-    stories.push({ [label] : promise });
+    stories.push({ [label] : promise, options });
   }
   else if ( Array.isArray(promise) ) {
     const _stories = [];
-    promise.map(promise => promise((label, promise) => it(label, promise, _stories)));
-    stories.push({ [label] : _stories });
+    promise.map(promise => promise((label, promise) => it(label, promise, options || {}, _stories)));
+    stories.push({ [label] : _stories, options });
   }
   else if ( promise instanceof Describer ) {
-    stories.push({ [label] : promise });
+    stories.push({ [label] : promise, options });
   }
 }
 
@@ -22,7 +22,7 @@ function describe ( descriptor, stories, options = {} ) {
 
       if ( typeof stories === 'function' ) {
         const _stories = [];
-        stories((label, promise) => it(label, promise, _stories));
+        stories((label, promise, options = {}) => it(label, promise, options, _stories));
         stories = _stories;
       }
 
@@ -59,6 +59,14 @@ function describe ( descriptor, stories, options = {} ) {
 
             const storyDescriptor = Object.keys(stories[cursor])[0];
 
+            /**
+             *  {
+             *    timeout : <Number> - milliseconds
+             *  }
+             */
+
+            const storyOptions = stories[cursor].options || {};
+
             let story = stories[cursor][storyDescriptor];
 
             if ( story instanceof Describer ) {
@@ -73,7 +81,27 @@ function describe ( descriptor, stories, options = {} ) {
 
             else {
               promise = new Promise((ok, ko) => {
-                story(ok, ko);
+
+                let fulfilled = null;
+
+                if ( 'timeout' in storyOptions ) {
+                  setTimeout(() => {
+                    if ( fulfilled === null ) {
+                      ko(new Error(`Could not fulfill test, script timed out after ${storyOptions.timeout} milliseconds`));
+                    }
+                  }, storyOptions.timeout);
+                }
+
+                story(
+                  (...args) => {
+                    fulfilled = true;
+                    ok.apply(null, args);
+                  },
+                  (...args) => {
+                    fulfilled = false;
+                    ko.apply(null, args);
+                  }
+                );
               });
             }
 
@@ -176,7 +204,7 @@ class Describer {
   constructor (func) {
     this.func = () => {
       const stories = [];
-      func()((label, promise) => it(label, promise, stories));
+      func()((label, promise, options = {}) => it(label, promise, options, stories));
       return stories;
     };
   }

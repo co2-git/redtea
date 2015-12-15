@@ -81,3 +81,9 @@ function test (props) {
 
 export default test;
 ```
+
+# Timeout
+
+```js
+it('should time out after 1 second', () => {}, { timeout : 1000 });
+```
