@@ -207,7 +207,7 @@ function describe(descriptor, stories) {
               ko(error);
             }
           } else {
-            ok({ tests: tests, passed: passed, failed: failed, time: Date.now() - begin });
+            ok({ tests: tests, passed: passed, failed: failed, time: Date.now() - begin, props: props });
           }
         };
 
