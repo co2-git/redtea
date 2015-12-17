@@ -13,7 +13,7 @@ process.title = 'redtea';
 let tests = 0, passed = 0, failed = 0;
 const begin = Date.now();
 
-console.log('redtea v'.red.underline + packageJSON.version.toString().red.underline, 'pid', process.pid);
+console.log('redtea v'.red.underline + packageJSON.version.toString().red.underline, 'pid:', process.pid);
 
 const files = [];
 

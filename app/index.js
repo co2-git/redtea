@@ -188,7 +188,7 @@ function describe ( descriptor, stories, options = {} ) {
           }
         }
         else {
-          ok({ tests, passed, failed, time : Date.now() - begin, props });
+          ok({ tests, passed, failed, time : Date.now() - begin });
         }
       };
 

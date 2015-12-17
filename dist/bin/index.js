@@ -32,7 +32,7 @@ var tests = 0,
     failed = 0;
 var begin = Date.now();
 
-console.log('redtea v'.red.underline + _packageJson2['default'].version.toString().red.underline, 'pid', process.pid);
+console.log('redtea v'.red.underline + _packageJson2['default'].version.toString().red.underline, 'pid:', process.pid);
 
 var files = [];
 
