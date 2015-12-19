@@ -20,10 +20,10 @@ const foo = () => new Promise(resolve => resolve(1));
 
 describe('foo' , it => {
 
-  // Blocking
+  // Synchronous
   it('should be a function', () => foo.should.be.a.Function());
 
-  // Non blocking
+  // Asynchronous
   it('should resolve to 1', () => new Promise((resolve, reject) => {
     foo().then(
       resolved => {
