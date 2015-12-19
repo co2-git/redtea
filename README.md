@@ -65,7 +65,7 @@ function isFoo (foo) {
 
 describe('foos' , it => {
 
-  foos.forEach(foo => it('should be a foo', it => isFoo(foo)(it)));
+  foos.forEach(foo => it('should be a foo', it => isFoo(foo)(it) ));
 
 });
 ```
@@ -89,4 +89,23 @@ You can now invoke the file  via the cli:
 
 ```bash
 redtea test.js
+```
+
+You can pass `props`
+
+```js
+// test.js
+import describe from 'redtea';
+
+function test (props) {
+  return describe('My test', it => {
+    it('should be foo', () => props.foo.should.be.exactly('bar'));
+  });
+}
+
+export default test;
+```
+
+```bash
+redtea test.js foo=bar
 ```
