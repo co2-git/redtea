@@ -1,7 +1,7 @@
 redtea
 ===
 
-A test framework for Node based on promise, es6 and re-usability.
+A test framework for Node based on re-usability.
 
 # Install
 
