@@ -8,82 +8,69 @@ A test framework for Node based on promise, es6 and re-usability.
 ```bash
 npm install -g redtea
 ```
-# Use with cli
-
-```js
-import describe from 'redtea';
-
-function test (props) {
-  return describe('life' , it => it('should be a party', fulfill => fulfill()));
-}
-
-export default test;
-```
-
-```bash
-redtea
-```
-
-By default, it will scan test directory. You can specify another directory:
-
-```bash
-redtea some/other/directory
-```
 
 # Usage
-
-redtea is promise-based, so assertions need to fulfill.
 
 ```js
 import describe from 'redtea';
 // we use should, but you can use any assertion framework
 import should from 'should';
 
-// variable to test
+const foo = () => new Promise(resolve => resolve(1));
 
-function foo () {
-  return new Promise(fulfill => fulfill(true));
-}
+describe('foo' , it => {
 
-function test (props) {
-  const locals = {};
+  // Blocking
+  it('should be a function', () => foo.should.be.a.Function());
 
-  return describe('foo' , it => {
+  // Non blocking
+  it('should resolve to 1', () => new Promise((resolve, reject) => {
+    foo().then(
+      resolved => {
+        resolved.should.be.exactly(1);
+        resolve();
+      },
+      reject
+    );
+  }));
 
-    it('should be a function', fulfill => {
-      foo.should.be.a.Function();
-      fulfill();
-    });
+  // Nested
+  it('should nest', it => {
 
-    it('should be a promise', fulfill => {
-      locals.promise = foo();
-      locals.promise.should.be.an.instanceof(Promise);
-      fulfill();
-    });
-
-    it('should fulfill', (fulfill, reject) => {
-      locals.promise.then(
-        results => {
-          locals.results = results;
-          fulfill();
-        },
-        reject
-      );
-    });
-
-    it('should be a function', fulfill => {
-      locals.results.should.be.true();
-      fulfill();
-    });
+    it('should be nested', () => true);
 
   });
+});
+
+// describe returns a promise, so it can be chained and will return a stat object
+
+describe('foo', it => {
+  it('should be ok', () => {});
+})
+  .then(stats => {
+    console.log(stats); // { tests : 1, passed : 1, failed : 0, time : 4 }
+  });
+
+export default test;
+```
+
+# CLI
+
+You can invoke directly any file with the CLI provided it is encapsulated in a function such as:
+
+```js
+// test.js
+import describe from 'redtea';
+
+function test (props) {
+  return describe('My test', it => { /*...*/} );
 }
 
 export default test;
 ```
 
-# Timeout
+You can now invoke the file  via the cli:
 
-```js
-it('should time out after 1 second', () => {}, { timeout : 1000 });
+```bash
+redtea test.js
 ```
