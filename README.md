@@ -50,8 +50,26 @@ describe('foo', it => {
   .then(stats => {
     console.log(stats); // { tests : 1, passed : 1, failed : 0, time : 4 }
   });
+```
 
-export default test;
+# Helper functions
+
+Functions that are meant to be re-used - example in an array
+
+```js
+const foos = [1, 2, 3, 4];
+
+function isFoo (foo) {
+  return it => {
+    it('should be a number', () => foo.should.be.a.Number());
+  };
+}
+
+describe('foos' , it => {
+
+  foos.forEach(foo => it('should be a foo', it => shouldBeAFoo(foo)(it)));
+
+});
 ```
 
 # CLI
