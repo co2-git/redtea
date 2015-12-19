@@ -44,9 +44,7 @@ describe('foo' , it => {
 
 // describe returns a promise, so it can be chained and will return a stat object
 
-describe('foo', it => {
-  it('should be ok', () => {});
-})
+describe('foo', it => it('should be ok', () => true.should.be.true()))
   .then(stats => {
     console.log(stats); // { tests : 1, passed : 1, failed : 0, time : 4 }
   });
