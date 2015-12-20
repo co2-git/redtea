@@ -16,18 +16,18 @@ function test () {
 
   return describe ( 'redtea' , it => {
 
-    it ( 'should fulfill' , ok => ok() );
+    it ( 'should fulfill' , () => new Promise(ok => ok()) );
 
     it ( 'Nest' , [
       it => {
 
-        it ( 'should be true' , ok => ok() );
+        it ( 'should be true' , () => {} );
 
         it ( 'should deep nest' , [
 
           it => {
 
-            it ( 'should be cool' , ok => ok() );
+            it ( 'should be cool' ,() => {} );
 
           }
 
