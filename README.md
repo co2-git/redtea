@@ -35,7 +35,7 @@ describe('foo' , it => {
   }));
 
   // Nested
-  it('should nest', it => {
+  describe('should nest', it => {
 
     it('should be nested', () => true);
 

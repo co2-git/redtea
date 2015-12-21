@@ -5,10 +5,7 @@ import should from 'should';
 
 function reusable (foo) {
   return it => {
-    it('should be true value', ok => {
-      foo.should.be.true();
-      ok();
-    });
+    it('should be true value', foo.should.be.true());
   };
 }
 
