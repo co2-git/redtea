@@ -3,9 +3,10 @@
 Object.defineProperty(exports, '__esModule', {
   value: true
 });
-function sequencer(pipeline, locals, afterEach) {
-  if (pipeline === undefined) pipeline = [];
-  if (locals === undefined) locals = {};
+function sequencer() {
+  var pipeline = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+  var locals = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+  var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
   return new Promise(function (ok, ko) {
     try {
@@ -17,8 +18,8 @@ function sequencer(pipeline, locals, afterEach) {
             if (pipeline[cursor]) {
               pipeline[cursor](locals).then(function () {
                 try {
-                  if (afterEach) {
-                    afterEach();
+                  if (typeof options.afterEach === 'function') {
+                    options.afterEach();
                   }
                   cursor++;
                   run();

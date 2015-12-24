@@ -14,6 +14,8 @@ var _colors = require('colors');
 
 var _colors2 = _interopRequireDefault(_colors);
 
+var _packageJson = require('../../package.json');
+
 // import v2 from './lib/v2';
 
 function it(label, promise) {
@@ -135,7 +137,7 @@ function describe(descriptor, stories) {
                           }
 
                           fulfilled = true;
-                          ok.apply(null, args);
+                          ok.apply({ version: _packageJson.version }, args);
                         }, function () {
                           for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
                             args[_key2] = arguments[_key2];
@@ -253,7 +255,7 @@ describe.use = function (fn) {
   return new Describer(fn);
 };
 
-// describe.v2 = v2;
+describe.version = _packageJson.version;
 
 exports['default'] = describe;
 module.exports = exports['default'];

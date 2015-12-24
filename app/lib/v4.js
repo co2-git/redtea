@@ -1,6 +1,7 @@
 'use strict';
 
-import colors from 'colors';
+import colors         from 'colors';
+import { version }    from '../../package.json';
 // import v2 from './lib/v2';
 
 function it (label, promise, options = {}, stories = []) {
@@ -100,7 +101,7 @@ function describe ( descriptor, stories, options = {} ) {
                     test.then(
                       (...args) => {
                         fulfilled = true;
-                        ok.apply(null, args);
+                        ok.apply({ version }, args);
                       },
                       (...args) => {
                         fulfilled = false;
@@ -231,6 +232,6 @@ describe.Describer = Describer;
 describe.imply = (fn) => new Describer(fn);
 describe.use = (fn) => new Describer(fn);
 
-// describe.v2 = v2;
+describe.version = version;
 
 export default describe;

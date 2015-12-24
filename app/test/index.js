@@ -1,41 +1,72 @@
 'use strict';
 
-import describe from '../';
 import should from 'should';
+import describe from '..';
 
-function reusable (foo) {
+function reusable (foo = 1) {
   return it => {
-    it('should be true value', foo.should.be.true());
+    it('foo should be 1', () => foo.should.be.exactly(1));
   };
 }
 
-function test () {
+function test (props) {
+  return describe('redtea v2.1', it => {
+    it('synchronous', () => 1);
 
-  return describe ( 'redtea' , it => {
+    // it('throw', () => { throw new Error('Throw') });
 
-    it ( 'should fulfill' , () => new Promise(ok => ok()) );
+    it('fulfill', () => new Promise(ok => ok()));
 
-    it ( 'Nest' , [
-      it => {
+    // it('reject', () => new Promise((ok, ko) => {
+    //   ko(new Error('Reject'));
+    // }));
 
-        it ( 'should be true' , () => {} );
+    it('time out', () => new Promise((ok, ko) => {
+      setTimeout(ok, 1000);
+    }));
 
-        it ( 'should deep nest' , [
+    it('Nest -- closure', it => {
+      it('should be nested closure', () => 1);
 
-          it => {
+      it('should nest closure', it => {
+        it('should be nested closure', () => 1);
+      });
+    });
 
-            it ( 'should be cool' ,() => {} );
+    it('Nest -- array style', [it => {
+      it('should be nested array style', () => 1);
 
-          }
+      it('should nest', it => {
+        it('should be nested array style', () => 1);
+      });
+    }]);
 
-        ]);
+    it('1', it => {
+      it('2');
 
-      }
-    ] );
+      it('3', it => {
+        it('4');
 
-    it ( 'should reuse' , describe.use(() => reusable(true)) );
+        it('5', it => {
+          it('6');
 
-  } );
+          it('7', it => {
+            it('8');
+          });
+        });
+
+        it('9', it => {
+          it('10');
+        });
+      });
+
+      it('reusable', it => reusable()(it));
+
+      it('reusable old synatx', describe.use(() => reusable()));
+
+    });
+
+  });
 }
 
 export default test;

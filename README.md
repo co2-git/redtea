@@ -35,7 +35,7 @@ describe('foo' , it => {
   }));
 
   // Nested
-  describe('should nest', it => {
+  it('should nest', it => {
 
     it('should be nested', () => true);
 
@@ -108,4 +108,12 @@ export default test;
 
 ```bash
 redtea test.js foo=bar
+```
+
+# Forked test
+
+You can execute tests as their own forked process
+
+```bash
+redtea test.js --fork
 ```

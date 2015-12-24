@@ -4,7 +4,9 @@
 
 import fs               from 'fs-extra';
 import path             from 'path';
+import { fork }         from 'child_process';
 import colors           from 'colors';
+import describe         from '..';
 import sequencer        from '../lib/sequencer';
 import packageJSON      from '../../package.json';
 
@@ -17,7 +19,11 @@ console.log('redtea v'.red.underline + packageJSON.version.toString().red.underl
 
 const files = [];
 
-const dir = path.join(process.cwd(), process.argv[2] || 'test');
+let dir = ( process.argv[2] || 'test' );
+
+if ( ! /^\//.test(dir) ) {
+  dir = path.join(process.cwd(), dir);
+}
 
 let done = false;
 
@@ -27,9 +33,47 @@ process.on('exit', () => {
     console.log('  ', `                 TEST FAILED   (EXIT)                     `.bgRed.bold);
     console.log('  ', '                                                          '.bgRed);
   }
+  else {
+    if ( process.send ) {
+      process.send('redtea.done');
+    }
+  }
 });
 
+if ( process.send ) {
+  process.send('redtea.cli');
+}
+
+const cliProps = {};
+
+const flags = [];
+
+process.argv
+  .filter((arg, index) => index > 2)
+  .filter(arg => /=/.test(arg))
+  .forEach(arg => {
+    const bits = arg.split('=');
+    cliProps[bits[0]] = bits[1];
+  });
+
+process.argv
+  .filter((arg, index) => index > 2)
+  .filter(arg => /^--/.test(arg))
+  .forEach(arg => {
+    flags.push(arg.replace(/^--/, ''));
+  });
+
 fs.walk(dir)
+  .on('error', error => {
+    console.log('scan dir error'.yellow);
+
+    if ( error.stack ) {
+      console.log(error.stack.yellow);
+    }
+    else {
+      console.log(error);
+    }
+  })
   .on('data', file => {
     if ( file.stats.isFile() ) {
       let _path = file.path.split(path.sep);
@@ -46,8 +90,53 @@ fs.walk(dir)
   .on('end', () => {
     sequencer(
       files
-        .map((file, index) => require(file))
+        .map((file, index) => {
+          if ( flags.indexOf('fork') > -1 ) {
+            return (props) => {
+              const locals = {};
+
+              return describe(`Forking test ${path.basename(file)}`, it => {
+
+                it('should fork', () => new Promise((ok, ko) => {
+
+                  console.log(__filename, [file])
+
+                  locals.fork = fork(__filename, [file]);
+
+                  locals.fork
+
+                    .on('error', ko)
+
+                    .on('message', message => {
+                      if ( message === 'redtea.cli' ) {
+                        ok();
+                      }
+                    });
+
+                }));
+
+                it('should emit ok', () => new Promise((ok, ko) => {
+
+                  locals.fork.on('message', message => {
+
+                    if ( message === 'redtea.done' ) {
+                      ok();
+                    }
+
+                  });
+
+                }));
+
+              });
+            };
+          }
+          else {
+            console.log('require', file);
+            return require(file);
+          }
+        })
         .map((test, index) => props => new Promise((ok, ko) => {
+          // console.log({ test : files[index] })
           try {
             if ( typeof test !== 'function' ) {
               return ko(new Error(`Test ${files[index]} must be a function`));
@@ -69,7 +158,9 @@ fs.walk(dir)
           catch ( error ) {
             ko(error);
           }
-        }))
+        })),
+
+      cliProps
     )
     .then(
       () => {
@@ -120,6 +211,27 @@ fs.walk(dir)
         console.log('  ', '                                                          '.bgRed);
         console.log('  ', `                  TEST FAILED                             `.bgRed.bold);
         console.log('  ', '                                                          '.bgRed);
+
+        const time = Date.now() - begin;
+
+        let duration = '';
+
+        if ( time < 1000 ) {
+          duration = time + 'ms';
+        }
+
+        else if ( time < (1000 * 60) ) {
+          duration = time / 1000 + 's';
+        }
+
+        else if ( time < (1000 * (60 * 60)) ) {
+          duration = time / 1000 / 60 + 'minutes';
+        }
+
+        console.log();
+        console.log('   ----------------------------------------------------------');
+        console.log('  ', `${tests} tests in ${duration}`.bold, `${passed} passed`.green, `${failed} failed`.red);
+        console.log('   ----------------------------------------------------------');
 
         done = true;
 
