@@ -27,21 +27,23 @@ if ( ! /^\//.test(dir) ) {
 
 let done = false;
 
+let runningTests = true;
+
 process.on('exit', () => {
-  if ( ! done ) {
+  if ( ! done && runningTests ) {
     console.log('  ', '                                                          '.bgRed);
     console.log('  ', `                 TEST FAILED   (EXIT)                     `.bgRed.bold);
     console.log('  ', '                                                          '.bgRed);
   }
-  else {
-    if ( process.send ) {
-      process.send('redtea.done');
-    }
-  }
+  // else {
+  //   if ( process.send ) {
+  //     process.send('redtea.done');
+  //   }
+  // }
 });
 
 if ( process.send ) {
-  process.send('redtea.cli');
+  process.send(JSON.stringify({ redtea : true }));
 }
 
 const cliProps = {};
@@ -62,6 +64,13 @@ process.argv
   .forEach(arg => {
     flags.push(arg.replace(/^--/, ''));
   });
+
+switch ( process.argv[2] ) {
+  case '-v':
+    done = true;
+    runningTests = false;
+    process.exit(0);
+}
 
 fs.walk(dir)
   .on('error', error => {
@@ -103,13 +112,22 @@ fs.walk(dir)
 
                   locals.fork = fork(__filename, [file]);
 
+                  const listen = message => {
+
+                  };
+
                   locals.fork
 
                     .on('error', ko)
 
                     .on('message', message => {
-                      if ( message === 'redtea.cli' ) {
-                        ok();
+
+                      message = JSON.parse(message);
+
+                      if ( message.redtea ) {
+                        if ( message.redtea === true ) {
+                          ok();
+                        }
                       }
                     });
 
@@ -117,13 +135,30 @@ fs.walk(dir)
 
                 it('should emit ok', () => new Promise((ok, ko) => {
 
-                  locals.fork.on('message', message => {
+                  locals.fork
+                    .on('message', message => {
+                      message = JSON.parse(message);
 
-                    if ( message === 'redtea.done' ) {
-                      ok();
-                    }
+                      if ( message.redtea ) {
+                        if ( message.redtea.stats ) {
+                          tests += message.redtea.stats.tests;
+                          passed += message.redtea.stats.passed;
+                          failed += message.redtea.stats.failed;
 
-                  });
+                          if ( message.redtea.stats.failed ) {
+                            return ko(new Error(`Fork failed with ${message.redtea.stats.failed} errors`));
+                          }
+                          else {
+                            ok();
+                          }
+                        }
+                      }
+                    })
+                    .on('exit', status => {
+                      if ( ! status ) {
+                        ok();
+                      }
+                    });
 
                 }));
 
@@ -131,7 +166,6 @@ fs.walk(dir)
             };
           }
           else {
-            console.log('require', file);
             return require(file);
           }
         })
@@ -142,10 +176,17 @@ fs.walk(dir)
               return ko(new Error(`Test ${files[index]} must be a function`));
             }
 
-            const promise = test(props);
+            let promise = test(props);
 
             if ( typeof promise.then !== 'function' ) {
-              return ko(new Error(`Test ${files[index]} must be a function`));
+              console.log(typeof promise);
+              if ( typeof promise === 'function' ) {
+                promise = promise(describe);
+              }
+              else {
+                return ko(new Error(`Test ${files[index]} must be a promise`));
+              }
+
             }
 
             promise.then(results => {
@@ -199,6 +240,8 @@ fs.walk(dir)
 
         done = true;
 
+        process.send(JSON.stringify({ redtea : { stats : { tests, passed, failed } }}));
+
         process.exit(failed);
       },
       error => {
@@ -234,6 +277,8 @@ fs.walk(dir)
         console.log('   ----------------------------------------------------------');
 
         done = true;
+
+        process.send(JSON.stringify({ redtea : { stats : { tests, passed, failed } }}));
 
         process.exit(1);
       }

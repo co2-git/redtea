@@ -234,4 +234,8 @@ describe.use = fn => {
   return it => fn()(it);
 };
 
+it.use = fn => {
+  return it => fn()(it);
+};
+
 export default describe;

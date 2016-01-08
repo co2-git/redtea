@@ -1,14 +1,18 @@
 'use strict';
 
+var _defineProperty = require('babel-runtime/helpers/define-property')['default'];
+
+var _classCallCheck = require('babel-runtime/helpers/class-call-check')['default'];
+
+var _Promise = require('babel-runtime/core-js/promise')['default'];
+
+var _Object$keys = require('babel-runtime/core-js/object/keys')['default'];
+
+var _interopRequireDefault = require('babel-runtime/helpers/interop-require-default')['default'];
+
 Object.defineProperty(exports, '__esModule', {
   value: true
 });
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 var _colors = require('colors');
 
@@ -48,7 +52,7 @@ function it(label, promise) {
 function describe(descriptor, stories) {
   var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
-  return new Promise(function (ok, ko) {
+  return new _Promise(function (ok, ko) {
     try {
       (function () {
 
@@ -94,7 +98,7 @@ function describe(descriptor, stories) {
 
                 var isNested = false;
 
-                var storyDescriptor = Object.keys(stories[cursor])[0];
+                var storyDescriptor = _Object$keys(stories[cursor])[0];
 
                 /**
                  *  {
@@ -115,7 +119,7 @@ function describe(descriptor, stories) {
 
                   isNested = true;
                 } else {
-                  promise = new Promise(function (ok, ko) {
+                  promise = new _Promise(function (ok, ko) {
 
                     var fulfilled = null;
 
@@ -130,7 +134,7 @@ function describe(descriptor, stories) {
                     try {
                       var test = story();
 
-                      if (test instanceof Promise || test && typeof test.then === 'function') {
+                      if (test instanceof _Promise || test && typeof test.then === 'function') {
                         test.then(function () {
                           for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
                             args[_key] = arguments[_key];

@@ -1,10 +1,14 @@
 'use strict';
 
+var _Promise = require('babel-runtime/core-js/promise')['default'];
+
+var _Object$assign = require('babel-runtime/core-js/object/assign')['default'];
+
+var _interopRequireDefault = require('babel-runtime/helpers/interop-require-default')['default'];
+
 Object.defineProperty(exports, '__esModule', {
   value: true
 });
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 var _colors = require('colors');
 
@@ -23,7 +27,7 @@ function it(label, story, options, id) {
 
 it.pause = function (milliseconds) {
   return function () {
-    return new Promise(function (ok) {
+    return new _Promise(function (ok) {
       return setTimeout(ok, milliseconds);
     });
   };
@@ -33,7 +37,7 @@ function describe(label, story) {
   var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
   var stories = arguments.length <= 3 || arguments[3] === undefined ? [] : arguments[3];
 
-  return new Promise(function (ok, ko) {
+  return new _Promise(function (ok, ko) {
     var tab = options.tab || '';
 
     if (!('nested' in options)) {
@@ -69,7 +73,7 @@ function run(stories) {
   var id = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
   var stats = arguments.length <= 2 || arguments[2] === undefined ? { tests: 0, passed: 0, failed: 0, time: 0 } : arguments[2];
 
-  return new Promise(function (ok, ko) {
+  return new _Promise(function (ok, ko) {
     var index = undefined;
 
     var story = stories.reduce(function (nextInQueue, story, storyIndex) {
@@ -81,7 +85,7 @@ function run(stories) {
     }, null);
 
     if (story) {
-      new Promise(function (ok, ko) {
+      new _Promise(function (ok, ko) {
         try {
           // Suporting old array syntax
           if (Array.isArray(story.tell)) {
@@ -97,7 +101,7 @@ function run(stories) {
 
             story.options.nested = true;
 
-            return it.apply({ stories: stories }, [labelChild, storyChild, Object.assign({}, optionsChild, { tab: (story.tab || story.options.tab) + '|_'.grey }, { parent: story.id }), id++]);
+            return it.apply({ stories: stories }, [labelChild, storyChild, _Object$assign({}, optionsChild, { tab: (story.tab || story.options.tab) + '|_'.grey }, { parent: story.id }), id++]);
           });
 
           if (test && test.then) {
@@ -218,6 +222,12 @@ function run(stories) {
 }
 
 describe.use = function (fn) {
+  return function (it) {
+    return fn()(it);
+  };
+};
+
+it.use = function (fn) {
   return function (it) {
     return fn()(it);
   };

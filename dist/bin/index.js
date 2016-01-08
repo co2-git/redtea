@@ -3,7 +3,9 @@
 
 'use strict';
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+var _Promise = require('babel-runtime/core-js/promise')['default'];
+
+var _interopRequireDefault = require('babel-runtime/helpers/interop-require-default')['default'];
 
 var _fsExtra = require('fs-extra');
 
@@ -50,20 +52,23 @@ if (!/^\//.test(dir)) {
 
 var done = false;
 
+var runningTests = true;
+
 process.on('exit', function () {
-  if (!done) {
+  if (!done && runningTests) {
     console.log('  ', '                                                          '.bgRed);
     console.log('  ', '                 TEST FAILED   (EXIT)                     '.bgRed.bold);
     console.log('  ', '                                                          '.bgRed);
-  } else {
-    if (process.send) {
-      process.send('redtea.done');
-    }
   }
+  // else {
+  //   if ( process.send ) {
+  //     process.send('redtea.done');
+  //   }
+  // }
 });
 
 if (process.send) {
-  process.send('redtea.cli');
+  process.send(JSON.stringify({ redtea: true }));
 }
 
 var cliProps = {};
@@ -88,6 +93,13 @@ process.argv.filter(function (arg, index) {
 }).forEach(function (arg) {
   flags.push(arg.replace(/^--/, ''));
 });
+
+switch (process.argv[2]) {
+  case '-v':
+    done = true;
+    runningTests = false;
+    process.exit(0);
+}
 
 _fsExtra2['default'].walk(dir).on('error', function (error) {
   console.log('scan dir error'.yellow);
@@ -124,26 +136,48 @@ _fsExtra2['default'].walk(dir).on('error', function (error) {
         return (0, _2['default'])('Forking test ' + _path3['default'].basename(file), function (it) {
 
           it('should fork', function () {
-            return new Promise(function (ok, ko) {
+            return new _Promise(function (ok, ko) {
 
               console.log(__filename, [file]);
 
               locals.fork = (0, _child_process.fork)(__filename, [file]);
 
+              var listen = function listen(message) {};
+
               locals.fork.on('error', ko).on('message', function (message) {
-                if (message === 'redtea.cli') {
-                  ok();
+
+                message = JSON.parse(message);
+
+                if (message.redtea) {
+                  if (message.redtea === true) {
+                    ok();
+                  }
                 }
               });
             });
           });
 
           it('should emit ok', function () {
-            return new Promise(function (ok, ko) {
+            return new _Promise(function (ok, ko) {
 
               locals.fork.on('message', function (message) {
+                message = JSON.parse(message);
 
-                if (message === 'redtea.done') {
+                if (message.redtea) {
+                  if (message.redtea.stats) {
+                    tests += message.redtea.stats.tests;
+                    passed += message.redtea.stats.passed;
+                    failed += message.redtea.stats.failed;
+
+                    if (message.redtea.stats.failed) {
+                      return ko(new Error('Fork failed with ' + message.redtea.stats.failed + ' errors'));
+                    } else {
+                      ok();
+                    }
+                  }
+                }
+              }).on('exit', function (status) {
+                if (!status) {
                   ok();
                 }
               });
@@ -152,12 +186,11 @@ _fsExtra2['default'].walk(dir).on('error', function (error) {
         });
       };
     } else {
-      console.log('require', file);
       return require(file);
     }
   }).map(function (test, index) {
     return function (props) {
-      return new Promise(function (ok, ko) {
+      return new _Promise(function (ok, ko) {
         // console.log({ test : files[index] })
         try {
           if (typeof test !== 'function') {
@@ -167,7 +200,12 @@ _fsExtra2['default'].walk(dir).on('error', function (error) {
           var promise = test(props);
 
           if (typeof promise.then !== 'function') {
-            return ko(new Error('Test ' + files[index] + ' must be a function'));
+            console.log(typeof promise);
+            if (typeof promise === 'function') {
+              promise = promise(_2['default']);
+            } else {
+              return ko(new Error('Test ' + files[index] + ' must be a promise'));
+            }
           }
 
           promise.then(function (results) {
@@ -211,6 +249,8 @@ _fsExtra2['default'].walk(dir).on('error', function (error) {
 
     done = true;
 
+    process.send(JSON.stringify({ redtea: { stats: { tests: tests, passed: passed, failed: failed } } }));
+
     process.exit(failed);
   }, function (error) {
     if (error.stack) {
@@ -240,6 +280,8 @@ _fsExtra2['default'].walk(dir).on('error', function (error) {
     console.log('   ----------------------------------------------------------');
 
     done = true;
+
+    process.send(JSON.stringify({ redtea: { stats: { tests: tests, passed: passed, failed: failed } } }));
 
     process.exit(1);
   });

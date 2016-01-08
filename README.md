@@ -65,7 +65,7 @@ function isFoo (foo) {
 
 describe('foos' , it => {
 
-  foos.forEach(foo => it('should be a foo', it => isFoo(foo)(it) ));
+  foos.forEach(foo => it('should be a foo', it => it(isFoo(foo)) ));
 
 });
 ```
@@ -76,11 +76,12 @@ You can invoke directly any file with the CLI provided it is encapsulated in a f
 
 ```js
 // test.js
-import describe from 'redtea';
 
-function test (props) {
-  return describe('My test', it => { /*...*/} );
-}
+export default props => describe => describe('My test', it => {
+
+  it('should be ok', () => {});
+
+});
 
 export default test;
 ```

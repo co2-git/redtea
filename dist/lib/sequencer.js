@@ -1,5 +1,7 @@
 'use strict';
 
+var _Promise = require('babel-runtime/core-js/promise')['default'];
+
 Object.defineProperty(exports, '__esModule', {
   value: true
 });
@@ -8,7 +10,7 @@ function sequencer() {
   var locals = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
   var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
-  return new Promise(function (ok, ko) {
+  return new _Promise(function (ok, ko) {
     try {
       (function () {
         var cursor = 0;

@@ -1,10 +1,14 @@
 'use strict';
 
+var _Promise = require('babel-runtime/core-js/promise')['default'];
+
+var _Object$assign = require('babel-runtime/core-js/object/assign')['default'];
+
+var _interopRequireDefault = require('babel-runtime/helpers/interop-require-default')['default'];
+
 Object.defineProperty(exports, '__esModule', {
   value: true
 });
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 var _queue = require('./queue');
 
@@ -23,7 +27,7 @@ function describe(label, story) {
 
   // console.log('describe'.grey, label.grey.italic, options);
 
-  return new Promise(function (ok, ko) {
+  return new _Promise(function (ok, ko) {
     try {
       var _ret = (function () {
         var queue = options.queue || new _queue2['default']();
@@ -100,7 +104,7 @@ function describe(label, story) {
         };
 
         packed.story = function () {
-          return new Promise(function (ok, ko) {
+          return new _Promise(function (ok, ko) {
             try {
               var tell = story(function () {
                 for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
@@ -111,14 +115,14 @@ function describe(label, story) {
 
                 stats.tests++;
 
-                return describe.apply(Object.assign({}, { tab: options.tab + '|_'.grey }, { parent: packed.id }, { callbacks: [success, failure] }, { queue: queue }), args);
+                return describe.apply(_Object$assign({}, { tab: options.tab + '|_'.grey }, { parent: packed.id }, { callbacks: [success, failure] }, { queue: queue }), args);
               });
 
               if (packed.nested) {
                 console.log('  ' + options.tab + label.bgBlue);
               }
 
-              if (tell instanceof Promise) {
+              if (tell instanceof _Promise) {
                 tell.then(ok, ko);
               } else {
                 ok();

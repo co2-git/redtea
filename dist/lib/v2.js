@@ -1,10 +1,14 @@
 'use strict';
 
+var _Promise = require('babel-runtime/core-js/promise')['default'];
+
+var _Object$assign = require('babel-runtime/core-js/object/assign')['default'];
+
+var _interopRequireDefault = require('babel-runtime/helpers/interop-require-default')['default'];
+
 Object.defineProperty(exports, '__esModule', {
   value: true
 });
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 var _queue = require('./queue');
 
@@ -34,7 +38,7 @@ function describe(label, _story) {
     options = this;
   }
 
-  return new Promise(function (ok, ko) {
+  return new _Promise(function (ok, ko) {
     try {
       var _ret = (function () {
         options.tab = options.tab || '';
@@ -53,7 +57,7 @@ function describe(label, _story) {
           nested: false,
           stats: stats,
           story: function story() {
-            return new Promise(function (ok, ko) {
+            return new _Promise(function (ok, ko) {
               try {
                 var tell = _story(function () {
                   for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
@@ -61,14 +65,14 @@ function describe(label, _story) {
                   }
 
                   packed.nested = true;
-                  return describe.apply(Object.assign({}, { tab: options.tab + '|_'.grey }, { stats: stats }, { parent: packed.id }), args);
+                  return describe.apply(_Object$assign({}, { tab: options.tab + '|_'.grey }, { stats: stats }, { parent: packed.id }), args);
                 });
 
                 if (packed.nested) {
                   console.log('  ' + options.tab + label.bgBlue);
                 }
 
-                if (tell instanceof Promise) {
+                if (tell instanceof _Promise) {
                   tell.then(ok, ko);
                 } else {
                   ok();
