@@ -4,6 +4,9 @@ import colors from 'colors';
 import Bin from '../lib/bin';
 import packageJSON from '../../package.json';
 
+// the test
+var exec;
+
 // For Unix use: pkill redtea
 
 process.title = 'redtea';
@@ -16,7 +19,12 @@ process.on('exit', () => {
   }
 });
 
-console.log(`redtea v${packageJSON.version}`.red.bold)
+console.log(`redtea v${packageJSON.version}`.red.bold);
+
+if ( process.argv[2] === '-v' ) {
+  exec = { done : true };
+  process.exit(0);
+}
 
 const props = {};
 
@@ -44,7 +52,7 @@ process.argv
 
   });
 
-const exec = new Bin(files, props, flags)
+exec = new Bin(files, props, flags)
 
   .on('error', error => console.log(error.stack))
 

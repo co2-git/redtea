@@ -15,6 +15,9 @@ var _packageJson = require('../../package.json');
 
 var _packageJson2 = _interopRequireDefault(_packageJson);
 
+// the test
+var exec;
+
 // For Unix use: pkill redtea
 
 process.title = 'redtea';
@@ -28,6 +31,11 @@ process.on('exit', function () {
 });
 
 console.log(('redtea v' + _packageJson2['default'].version).red.bold);
+
+if (process.argv[2] === '-v') {
+  exec = { done: true };
+  process.exit(0);
+}
 
 var props = {};
 
@@ -49,7 +57,7 @@ process.argv.filter(function (arg, index) {
   }
 });
 
-var exec = new _libBin2['default'](files, props, flags).on('error', function (error) {
+exec = new _libBin2['default'](files, props, flags).on('error', function (error) {
   return console.log(error.stack);
 }).on('message', function (message) {
   return console.log({ message: message });
