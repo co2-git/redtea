@@ -14,15 +14,15 @@ var _colors = require('colors');
 
 var _colors2 = _interopRequireDefault(_colors);
 
-var _libSequencer = require('./lib/sequencer');
-
-var _libSequencer2 = _interopRequireDefault(_libSequencer);
-
 function it(label, story, options, id) {
   if (story === undefined) story = function () {};
   if (options === undefined) options = {};
 
-  this.stories.push({ label: label, tell: story, options: options, id: id, parent: options.parent });
+  if (typeof label === 'function') {
+    label()(it);
+  } else {
+    this.stories.push({ label: label, tell: story, options: options, id: id, parent: options.parent });
+  }
 }
 
 it.pause = function (milliseconds) {

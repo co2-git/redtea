@@ -65,7 +65,7 @@ function isFoo (foo) {
 
 describe('foos' , it => {
 
-  foos.forEach(foo => it('should be a foo', it => it(isFoo(foo)) ));
+  foos.forEach(foo => it('should be a foo', describe.use(() => isFoo(foo)) ));
 
 });
 ```

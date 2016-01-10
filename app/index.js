@@ -1,10 +1,14 @@
 'use strict';
 
 import colors from 'colors';
-import sequencer from './lib/sequencer';
 
 function it (label, story = () => {}, options = {}, id) {
-  this.stories.push({ label, tell : story, options, id, parent : options.parent });
+  if ( typeof label === 'function' ) {
+    label()(it);
+  }
+  else {
+    this.stories.push({ label, tell : story, options, id, parent : options.parent });
+  }
 }
 
 it.pause = milliseconds => () => new Promise(ok => setTimeout(ok, milliseconds));
