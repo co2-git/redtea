@@ -163,8 +163,8 @@ function run(stories) {
                 arrow = '↘ '.grey;
 
             if (!story.options.tab) {
-              name = name.bgBlue;
-              arrow = '↘ '.bgBlue;
+              name = name.bold.blue;
+              arrow = '↘ '.bold.blue;
             }
 
             console.log('  ' + story.options.tab + arrow + '' + name);

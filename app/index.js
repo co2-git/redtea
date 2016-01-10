@@ -163,8 +163,8 @@ function run (stories, id = 1, stats = { tests : 0, passed : 0, failed : 0, time
             let name = story.label.bold, arrow = '↘ '.grey;
 
             if ( ! story.options.tab ) {
-              name = name.bgBlue;
-              arrow = '↘ '.bgBlue;
+              name = name.bold.blue;
+              arrow = '↘ '.bold.blue;
             }
 
             console.log('  ' + story.options.tab +  arrow + '' + name);
