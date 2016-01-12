@@ -127,7 +127,9 @@ class Bin extends EventEmitter {
             .catch(ko)
         }
         else {
-          this.files.push(file);
+          if ( this.files.indexOf(file) === -1 ) {
+            this.files.push(file);
+          }
           ok();
         }
       })
@@ -154,6 +156,7 @@ class Bin extends EventEmitter {
   getFunctions () {
 
     const requires = this.files.map(file => new Promise((ok, ko) => {
+
       if ( this.flags.indexOf('fork') > -1 ) {
         this.required.push(this.fork(file));
       }

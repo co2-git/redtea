@@ -143,7 +143,9 @@ var Bin = (function (_EventEmitter) {
               _this3.getFiles.apply(_this3, _toConsumableArray(files)).then(ok, ko);
             })['catch'](ko);
           } else {
-            _this3.files.push(file);
+            if (_this3.files.indexOf(file) === -1) {
+              _this3.files.push(file);
+            }
             ok();
           }
         });
@@ -172,6 +174,7 @@ var Bin = (function (_EventEmitter) {
 
       var requires = this.files.map(function (file) {
         return new _Promise(function (ok, ko) {
+
           if (_this4.flags.indexOf('fork') > -1) {
             _this4.required.push(_this4.fork(file));
           } else {
