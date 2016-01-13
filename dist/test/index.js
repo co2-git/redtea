@@ -1,12 +1,10 @@
 'use strict';
 
-var _Promise = require('babel-runtime/core-js/promise')['default'];
-
-var _interopRequireDefault = require('babel-runtime/helpers/interop-require-default')['default'];
-
 Object.defineProperty(exports, '__esModule', {
   value: true
 });
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 var _should = require('should');
 
@@ -35,7 +33,7 @@ function test(props) {
     // it('throw', () => { throw new Error('Throw') });
 
     it('fulfill', function () {
-      return new _Promise(function (ok) {
+      return new Promise(function (ok) {
         return ok();
       });
     });
@@ -45,7 +43,7 @@ function test(props) {
     // }));
 
     it('time out', function () {
-      return new _Promise(function (ok, ko) {
+      return new Promise(function (ok, ko) {
         setTimeout(ok, 1000);
       });
     });

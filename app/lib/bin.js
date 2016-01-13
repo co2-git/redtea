@@ -173,10 +173,15 @@ class Bin extends EventEmitter {
     return sequencer(this.required.map(fn => () => new Promise((ok, ko) => {
       fn()
         .then(stats => {
-          this.tests += stats.tests;
-          this.passed += stats.passed;
-          this.failed += stats.failed;
-          this.time += stats.time;
+          for ( let stat of ['tests', 'passed', 'failed', 'time'] ) {
+            if ( typeof stats[stat] === 'number' ) {
+              this[stat] += stats[stat];
+            }
+          }
+          if ( typeof stats.tests !== 'number' ) {
+            this.tests ++;
+            this.failed ++;
+          }
           ok();
         })
         .catch(ko);
@@ -194,7 +199,7 @@ class Bin extends EventEmitter {
 
       child
         .on('error', ko)
-        .on('exit', () => ok(results))
+        .on('exit', status => ok(results))
         .on('message', message => {
 
           message = JSON.parse(message);

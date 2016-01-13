@@ -1,22 +1,20 @@
 'use strict';
 
-var _get = require('babel-runtime/helpers/get')['default'];
-
-var _inherits = require('babel-runtime/helpers/inherits')['default'];
-
-var _createClass = require('babel-runtime/helpers/create-class')['default'];
-
-var _classCallCheck = require('babel-runtime/helpers/class-call-check')['default'];
-
-var _toConsumableArray = require('babel-runtime/helpers/to-consumable-array')['default'];
-
-var _Promise = require('babel-runtime/core-js/promise')['default'];
-
-var _interopRequireDefault = require('babel-runtime/helpers/interop-require-default')['default'];
-
 Object.defineProperty(exports, '__esModule', {
   value: true
 });
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var _events = require('events');
 
@@ -106,11 +104,11 @@ var Bin = (function (_EventEmitter) {
         files[_key] = arguments[_key];
       }
 
-      return new _Promise(function (ok, ko) {
+      return new Promise(function (ok, ko) {
         try {
 
           var promises = files.map(function (file) {
-            return new _Promise(function (ok, ko) {
+            return new Promise(function (ok, ko) {
 
               try {
 
@@ -123,7 +121,7 @@ var Bin = (function (_EventEmitter) {
             });
           });
 
-          _Promise.all(promises).then(ok, ko);
+          Promise.all(promises).then(ok, ko);
         } catch (error) {
           ko(error);
         }
@@ -137,7 +135,7 @@ var Bin = (function (_EventEmitter) {
       return (0, _sequencer2['default'])(function () {
         return _sequencer2['default'].promisify(_fsExtra2['default'].stat, [file]);
       }, function (stat) {
-        return new _Promise(function (ok, ko) {
+        return new Promise(function (ok, ko) {
           if (stat.isDirectory()) {
             _this3.scandir(file).then(function (files) {
               _this3.getFiles.apply(_this3, _toConsumableArray(files)).then(ok, ko);
@@ -154,7 +152,7 @@ var Bin = (function (_EventEmitter) {
   }, {
     key: 'scandir',
     value: function scandir(dir) {
-      return new _Promise(function (ok, ko) {
+      return new Promise(function (ok, ko) {
 
         var files = [];
 
@@ -173,7 +171,7 @@ var Bin = (function (_EventEmitter) {
       var _this4 = this;
 
       var requires = this.files.map(function (file) {
-        return new _Promise(function (ok, ko) {
+        return new Promise(function (ok, ko) {
 
           if (_this4.flags.indexOf('fork') > -1) {
             _this4.required.push(_this4.fork(file));
@@ -184,7 +182,7 @@ var Bin = (function (_EventEmitter) {
         });
       });
 
-      return _Promise.all(requires);
+      return Promise.all(requires);
     }
   }, {
     key: 'runFunctions',
@@ -193,12 +191,20 @@ var Bin = (function (_EventEmitter) {
 
       return (0, _sequencer2['default'])(this.required.map(function (fn) {
         return function () {
-          return new _Promise(function (ok, ko) {
+          return new Promise(function (ok, ko) {
             fn().then(function (stats) {
-              _this5.tests += stats.tests;
-              _this5.passed += stats.passed;
-              _this5.failed += stats.failed;
-              _this5.time += stats.time;
+              var _arr = ['tests', 'passed', 'failed', 'time'];
+
+              for (var _i = 0; _i < _arr.length; _i++) {
+                var stat = _arr[_i];
+                if (typeof stats[stat] === 'number') {
+                  _this5[stat] += stats[stat];
+                }
+              }
+              if (typeof stats.tests !== 'number') {
+                _this5.tests++;
+                _this5.failed++;
+              }
               ok();
             })['catch'](ko);
           });
@@ -211,10 +217,10 @@ var Bin = (function (_EventEmitter) {
       var results = {};
 
       return function (props) {
-        return new _Promise(function (ok, ko) {
+        return new Promise(function (ok, ko) {
           var child = _child_process2['default'].fork(_path2['default'].resolve(__dirname, '../bin/index.js'), [file]);
 
-          child.on('error', ko).on('exit', function () {
+          child.on('error', ko).on('exit', function (status) {
             return ok(results);
           }).on('message', function (message) {
 
