@@ -90,6 +90,10 @@ function run(stories) {
 
           story.starts = Date.now();
 
+          if (typeof story.tell !== 'function') {
+            throw new Error('Story should be a function');
+          }
+
           var test = story.tell(function (labelChild, storyChild) {
             var optionsChild = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
@@ -226,6 +230,16 @@ describe.use = function (fn) {
 it.use = function (fn) {
   return function (it) {
     return fn()(it);
+  };
+};
+
+describe.pause = function (ms) {
+  return function (it) {
+    return it('should pause', function () {
+      return new Promise(function (ok) {
+        return setTimeout(ok, ms);
+      });
+    });
   };
 };
 

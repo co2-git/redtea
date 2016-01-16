@@ -161,7 +161,27 @@ class Bin extends EventEmitter {
         this.required.push(this.fork(file));
       }
       else {
-        this.required.push(require(file));
+        let fn = require(file);
+
+        if ( typeof fn !== 'function' ) {
+          let serialization = typeof fn;
+
+          try {
+            serialization += ' ' + JSON.stringify(fn);
+          }
+          catch ( error ) {}
+
+          this.required.push(props => describe('redtea imports file ' + file,
+            it => {
+              it('File should export a function', () => {
+                throw new Error('Expected a function, got ' + serialization);
+              });
+            }
+          ));
+        }
+        else {
+          this.required.push(fn);
+        }
       }
       ok();
     }));

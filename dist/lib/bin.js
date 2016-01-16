@@ -176,7 +176,27 @@ var Bin = (function (_EventEmitter) {
           if (_this4.flags.indexOf('fork') > -1) {
             _this4.required.push(_this4.fork(file));
           } else {
-            _this4.required.push(require(file));
+            var fn = require(file);
+
+            if (typeof fn !== 'function') {
+              (function () {
+                var serialization = typeof fn;
+
+                try {
+                  serialization += ' ' + JSON.stringify(fn);
+                } catch (error) {}
+
+                _this4.required.push(function (props) {
+                  return (0, _2['default'])('redtea imports file ' + file, function (it) {
+                    it('File should export a function', function () {
+                      throw new Error('Expected a function, got ' + serialization);
+                    });
+                  });
+                });
+              })();
+            } else {
+              _this4.required.push(fn);
+            }
           }
           ok();
         });

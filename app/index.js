@@ -75,6 +75,10 @@ function run (stories, id = 1, stats = { tests : 0, passed : 0, failed : 0, time
 
           story.starts = Date.now();
 
+          if ( typeof story.tell !== 'function' ) {
+            throw new Error('Story should be a function');
+          }
+
           const test = story.tell((labelChild, storyChild, optionsChild = {}) => {
             // console.log(`nesting "${story.id} ${story.label}"`.grey.italic);
 
@@ -240,6 +244,10 @@ describe.use = fn => {
 
 it.use = fn => {
   return it => fn()(it);
+};
+
+describe.pause = ms => {
+  return it => it('should pause', () => new Promise(ok => setTimeout(ok, ms)));
 };
 
 export default describe;
