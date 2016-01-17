@@ -30,7 +30,18 @@ class Bin extends EventEmitter {
     return new Promise((ok, ko) => {
       Promise
         .all(files.map(file => this.getFile(file)))
-        .then(results => ok(flattenArray(results)))
+        .then(results => {
+          results = flattenArray(results).reduce(
+            (unique, r) => {
+              if ( unique.indexOf(r) === -1 ) {
+                unique.push(r);
+              }
+              return unique;
+            },
+            []
+          );
+          ok(results);
+        })
         .catch(ko);
     });
   }

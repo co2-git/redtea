@@ -77,7 +77,13 @@ var Bin = (function (_EventEmitter) {
         Promise.all(files.map(function (file) {
           return _this.getFile(file);
         })).then(function (results) {
-          return ok(flattenArray(results));
+          results = flattenArray(results).reduce(function (unique, r) {
+            if (unique.indexOf(r) === -1) {
+              unique.push(r);
+            }
+            return unique;
+          }, []);
+          ok(results);
         })['catch'](ko);
       });
     }
