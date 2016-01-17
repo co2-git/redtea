@@ -42,10 +42,6 @@ var _ = require('..');
 
 var _2 = _interopRequireDefault(_);
 
-var _test = require('./test');
-
-var _test2 = _interopRequireDefault(_test);
-
 var i = 0;
 
 function flattenArray(arr) {

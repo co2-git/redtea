@@ -7,7 +7,6 @@ import child_process              from 'child_process';
 import colors                     from 'colors';
 import sequencer                  from 'sequencer';
 import describe                   from '..';
-import Test                       from './test';
 
 let i = 0
 
