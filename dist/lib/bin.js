@@ -6,7 +6,7 @@ Object.defineProperty(exports, '__esModule', {
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _get = function get(_x3, _x4, _x5) { var _again = true; _function: while (_again) { var object = _x3, property = _x4, receiver = _x5; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x3 = parent; _x4 = property; _x5 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -42,109 +42,66 @@ var _ = require('..');
 
 var _2 = _interopRequireDefault(_);
 
+var _test = require('./test');
+
+var _test2 = _interopRequireDefault(_test);
+
 var i = 0;
+
+function flattenArray(arr) {
+  return arr.reduce(function (r, i, p) {
+    if (Array.isArray(i)) {
+      r.push.apply(r, _toConsumableArray(flattenArray(i)));
+    } else {
+      r.push(i);
+    }
+    return r;
+  }, []);
+}
 
 var Bin = (function (_EventEmitter) {
   _inherits(Bin, _EventEmitter);
 
-  function Bin(files, props, flags) {
-    var _this = this;
-
+  function Bin() {
     _classCallCheck(this, Bin);
 
-    _get(Object.getPrototypeOf(Bin.prototype), 'constructor', this).call(this);
-
-    // Start timer
-
-    this.id = i++;
-    this.tests = 0;
-    this.passed = 0;
-    this.failed = 0;
-    this.time = 0;
-    this.required = [];
-    this.dir = '';
-    this.files = [];
-    this.flags = [];
-    this.done = false;
-    this.startsAt = Date.now();
-
-    // Begin
-
-    process.nextTick(function () {
-
-      try {
-        _this.flags = flags;
-
-        (0, _sequencer2['default'])(function () {
-          return _this.getFiles.apply(_this, _toConsumableArray(files));
-        }, function () {
-          return _this.getFunctions();
-        }, function () {
-          return _this.runFunctions();
-        }).then(function () {
-
-          _this.done = true;
-
-          _this.stopsAt = Date.now();
-
-          _this.emit('passed');
-        })['catch'](_this.emit.bind(_this, 'error'));
-      } catch (error) {
-        _this.emit('error', error);
-      }
-    });
+    _get(Object.getPrototypeOf(Bin.prototype), 'constructor', this).apply(this, arguments);
   }
 
-  _createClass(Bin, [{
+  _createClass(Bin, null, [{
     key: 'getFiles',
     value: function getFiles() {
-      var _this2 = this;
+      var _this = this;
 
       for (var _len = arguments.length, files = Array(_len), _key = 0; _key < _len; _key++) {
         files[_key] = arguments[_key];
       }
 
       return new Promise(function (ok, ko) {
-        try {
-
-          var promises = files.map(function (file) {
-            return new Promise(function (ok, ko) {
-
-              try {
-
-                var absolutePath = /^\//.test(file) ? file : _path2['default'].join(process.cwd(), file);
-
-                _this2.getFile(absolutePath).then(ok, ko);
-              } catch (error) {
-                ko(error);
-              }
-            });
-          });
-
-          Promise.all(promises).then(ok, ko);
-        } catch (error) {
-          ko(error);
-        }
+        Promise.all(files.map(function (file) {
+          return _this.getFile(file);
+        })).then(function (results) {
+          return ok(flattenArray(results));
+        })['catch'](ko);
       });
     }
   }, {
     key: 'getFile',
     value: function getFile(file) {
-      var _this3 = this;
+      var _this2 = this;
 
-      return (0, _sequencer2['default'])(function () {
+      file = /^\//.test(file) ? file : _path2['default'].join(process.cwd(), file);
+
+      return _sequencer2['default'].pipe(function () {
         return _sequencer2['default'].promisify(_fsExtra2['default'].stat, [file]);
       }, function (stat) {
         return new Promise(function (ok, ko) {
           if (stat.isDirectory()) {
-            _this3.scandir(file).then(function (files) {
-              _this3.getFiles.apply(_this3, _toConsumableArray(files)).then(ok, ko);
+            _this2.scandir(file).then(function (files) {
+              _this2.getFiles.apply(_this2, _toConsumableArray(files)).then(ok, ko);
             })['catch'](ko);
           } else {
-            if (_this3.files.indexOf(file) === -1) {
-              _this3.files.push(file);
-            }
-            ok();
+            ok(file);
           }
         });
       });
@@ -167,69 +124,51 @@ var Bin = (function (_EventEmitter) {
     }
   }, {
     key: 'getFunctions',
-    value: function getFunctions() {
-      var _this4 = this;
+    value: function getFunctions(files) {
+      var _this3 = this;
 
-      var requires = this.files.map(function (file) {
-        return new Promise(function (ok, ko) {
+      var props = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+      var flags = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
 
-          if (_this4.flags.indexOf('fork') > -1) {
-            _this4.required.push(_this4.fork(file));
-          } else {
+      return new Promise(function (ok, ko) {
+        try {
+          var required = files.map(function (file) {
+            if (flags.indexOf('fork') > -1) {
+              return _this3.fork(file);
+            }
+
             var fn = require(file);
 
             if (typeof fn !== 'function') {
-              (function () {
+              var _ret = (function () {
                 var serialization = typeof fn;
 
                 try {
                   serialization += ' ' + JSON.stringify(fn);
                 } catch (error) {}
 
-                _this4.required.push(function (props) {
-                  return (0, _2['default'])('redtea imports file ' + file, function (it) {
-                    it('File should export a function', function () {
-                      throw new Error('Expected a function, got ' + serialization);
+                return {
+                  v: function (props) {
+                    return (0, _2['default'])('redtea imports file ' + file, function (it) {
+                      it('File should export a function', function () {
+                        throw new Error('Expected a function, got ' + serialization);
+                      });
                     });
-                  });
-                });
+                  }
+                };
               })();
+
+              if (typeof _ret === 'object') return _ret.v;
             } else {
-              _this4.required.push(fn);
+              return fn;
             }
-          }
-          ok();
-        });
-      });
-
-      return Promise.all(requires);
-    }
-  }, {
-    key: 'runFunctions',
-    value: function runFunctions() {
-      var _this5 = this;
-
-      return (0, _sequencer2['default'])(this.required.map(function (fn) {
-        return function () {
-          return new Promise(function (ok, ko) {
-            fn().then(function (stats) {
-              var _arr = ['tests', 'passed', 'failed', 'time'];
-
-              for (var _i = 0; _i < _arr.length; _i++) {
-                var stat = _arr[_i];
-                if (typeof stats[stat] === 'number') {
-                  _this5[stat] += stats[stat];
-                }
-              }
-              if (typeof stats.tests !== 'number') {
-                _this5.tests++;
-                _this5.failed++;
-              }
-              ok();
-            })['catch'](ko);
           });
-        };
-      }));
+
+          ok(required);
+        } catch (error) {
+          ko(error);
+        }
+      });
     }
   }, {
     key: 'fork',
@@ -237,7 +176,8 @@ var Bin = (function (_EventEmitter) {
       var results = {};
 
       return function (props) {
-        return new Promise(function (ok, ko) {
+
+        var p = new Promise(function (ok, ko) {
           var child = _child_process2['default'].fork(_path2['default'].resolve(__dirname, '../bin/index.js'), [file]);
 
           child.on('error', ko).on('exit', function (status) {
@@ -254,7 +194,43 @@ var Bin = (function (_EventEmitter) {
             }
           });
         });
+
+        p.live = new _events.EventEmitter();
+
+        return p;
       };
+    }
+  }, {
+    key: 'runFunctions',
+    value: function runFunctions(fns) {
+      var live = new _events.EventEmitter();
+
+      var promise = (0, _sequencer2['default'])(fns.map(function (fn) {
+        return function () {
+          return new Promise(function (ok, ko) {
+            var test = fn();
+
+            test.live.on('error', live.emit.bind(live, 'error')).on('test', live.emit.bind(live, 'test')).on('passed', live.emit.bind(live, 'passed')).on('failed', live.emit.bind(live, 'failed'));
+
+            test.then(function (testResults) {
+              // for ( let stat of ['tests', 'passed', 'failed', 'time'] ) {
+              //   if ( typeof stats[stat] === 'number' ) {
+              //     this[stat] += stats[stat];
+              //   }
+              // }
+              // if ( stats && typeof stats.tests !== 'number' ) {
+              //   this.tests ++;
+              //   this.failed ++;
+              // }
+              ok(testResults);
+            })['catch'](ko);
+          });
+        };
+      }));
+
+      promise.live = live;
+
+      return promise;
     }
   }]);
 
@@ -263,15 +239,3 @@ var Bin = (function (_EventEmitter) {
 
 exports['default'] = Bin;
 module.exports = exports['default'];
-
-/** [<function>] */
-
-/** <number> */
-
-/** <number> */
-
-// if paths are relative
-
-/** [<string>]] */
-
-/** [<string>]] */

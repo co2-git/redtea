@@ -1,18 +1,37 @@
 #!/usr/bin/env node
 
-import colors from 'colors';
-import Bin from '../lib/bin';
-import packageJSON from '../../package.json';
+import colors           from 'colors';
+import sequencer        from 'sequencer';
+import Bin              from '../lib/bin';
+import packageJSON      from '../../package.json';
+
+function printTime (time) {
+  let duration = '';
+
+  if ( time < 1000 ) {
+    duration = time + 'ms';
+  }
+
+  else if ( time < (1000 * 60) ) {
+    duration = time / 1000 + 's';
+  }
+
+  else if ( time < (1000 * (60 * 60)) ) {
+    duration = time / 1000 / 60 + 'minutes';
+  }
+
+  return { time, duration };
+}
 
 // the test
-var exec;
+let done = false;
 
 // For Unix use: pkill redtea
 
 process.title = 'redtea';
 
 process.on('exit', () => {
-  if ( typeof exec === 'undefined' || !exec.done ) {
+  if ( ! done ) {
     console.log('  ', '                                                          '.bgRed);
     console.log('  ', `                 TEST FAILED   (EXIT)                     `.bgRed.bold);
     console.log('  ', '                                                          '.bgRed);
@@ -22,7 +41,7 @@ process.on('exit', () => {
 console.log(`redtea v${packageJSON.version}`.red.bold);
 
 if ( process.argv[2] === '-v' ) {
-  exec = { done : true };
+  done = true;
   process.exit(0);
 }
 
@@ -52,94 +71,169 @@ process.argv
 
   });
 
-exec = new Bin(files, props, flags)
+sequencer(
+  ()      =>  Bin.getFiles(...files),
+  files   =>  Bin.getFunctions(files, props, flags)
+)
+.then(results => {
+  const [files, functions] = results;
 
-  .on('error', error => console.log(error.stack))
+  const runner = Bin.runFunctions(functions);
 
-  .on('message', message => console.log({ message }))
+  runner.live
+    .on('error', error => console.log(error.stack))
+    .on('failed', test => {
+      if ( ! test.children.length ) {
+        let { duration, time } = printTime(test.time);
 
-  .on('passed', () => {
+        if ( time < 50 ) {
+          duration = `(${duration})`.white
+        }
+        else if ( time < 100 ) {
+          duration = `(${duration})`.yellow;
+        }
+        else {
+          duration = `(${duration})`.red;
+        }
 
-    const time = exec.stopsAt - exec.startsAt;
+        let tab = '';
 
-    let duration = '';
+        if ( test.parents.length ) {
+          for ( let i = 0; i < test.parents.length; i ++ ) {
+            tab += '|_'.grey;
+          }
+        }
 
-    if ( time < 1000 ) {
-      duration = time + 'ms';
-    }
+        console.log(tab + '✖'.bold.red, test.label.red, duration);
 
-    else if ( time < (1000 * 60) ) {
-      duration = time / 1000 + 's';
-    }
+        const lines = test.error.stack
+          .split(/\n/).map(l => l.yellow).join('\n' + tab);
 
-    else if ( time < (1000 * (60 * 60)) ) {
-      duration = time / 1000 / 60 + 'minutes';
-    }
+        console.log(tab + ' ' + lines);
+      }
+    })
+    .on('passed', test => {
+      if ( ! test.children.length ) {
+        let { duration, time } = printTime(test.time);
 
-    console.log();
-    console.log('   ----------------------------------------------------------');
-    console.log('  ', `${exec.tests} tests in ${duration}`.bold, `${exec.passed} passed`.green, `${exec.failed} failed`.red);
-    console.log('   ----------------------------------------------------------');
+        if ( time < 50 ) {
+          duration = `(${duration})`.white;
+        }
+        else if ( time < 100 ) {
+          duration = `(${duration})`.yellow;
+        }
+        else {
+          duration = `(${duration})`.red;
+        }
 
-    if ( exec.failed ) {
-      console.log('  ', '                                                          '.bgRed);
-      console.log('  ', `                  TEST FAILED   (x${exec.failed})                      `.bgRed.bold);
-      console.log('  ', '                                                          '.bgRed);
-    }
+        let tab = '';
 
-    else {
-      console.log('  ', '                                                          '.bgGreen);
-      console.log('  ', `                     ALL TESTS PASSED                     `.bgGreen.bold);
-      console.log('  ', '                                                          '.bgGreen);
-    }
+        if ( test.parents.length ) {
+          for ( let i = 0; i < test.parents.length; i ++ ) {
+            tab += '|_'.grey;
+          }
+        }
+        console.log(tab + '✔'.bold.green, test.label.grey, duration);
+      }
+    })
+    .on('test', test => {
+      if ( test.children.length ) {
+        let tab = '';
 
-    if ( process.send ) {
-      process.send(JSON.stringify({ redtea : exec }));
-    }
+        if ( test.parents.length ) {
+          for ( let i = 0; i < test.parents.length; i ++ ) {
+            tab += '|_'.grey;
+          }
+        }
 
-    process.exit(exec.failed);
+        console.log(tab + '↘', test.label.bold);
+      }
+    });
 
-  })
+  runner
+    .then(results => {
+      done = true;
 
-  .on('failed', error => {
+      const [ result ] = results;
 
-    if ( error.stack ) {
-      console.log(error.stack.yellow);
-    }
-    else {
-      console.log(error);
-    }
+      // console.log(result);
 
-    console.log('  ', '                                                          '.bgRed);
-    console.log('  ', `                  TEST FAILED                             `.bgRed.bold);
-    console.log('  ', '                                                          '.bgRed);
+      const { time } = result;
 
-    const time = exec.stopsAt - exec.startsAt;
+      const { duration } = printTime(time);
 
-    let duration = '';
+      const tests = result.children.filter(t => ! t.children.length);
+      const passed = result.passed.filter(t => ! t.children.length);
+      const failed = result.failed.filter(t => ! t.children.length);
 
-    if ( time < 1000 ) {
-      duration = time + 'ms';
-    }
+      console.log();
+      console.log('   ----------------------------------------------------------');
+      console.log('  ', `${tests.length} tests in ${duration}`.bold, `${passed.length} passed`.green, `${failed.length} failed`.red);
+      console.log('   ----------------------------------------------------------');
 
-    else if ( time < (1000 * 60) ) {
-      duration = time / 1000 + 's';
-    }
+      if ( failed.length ) {
+        console.log('  ', '                                                          '.bgRed);
+        console.log('  ', `                  TEST FAILED   (x${failed.length})                      `.bgRed.bold);
+        console.log('  ', '                                                          '.bgRed);
 
-    else if ( time < (1000 * (60 * 60)) ) {
-      duration = time / 1000 / 60 + 'minutes';
-    }
+        console.log();
 
-    console.log();
-    console.log('   ----------------------------------------------------------');
-    console.log('  ', `${exec.tests} tests in ${duration}`.bold, `${exec.passed} passed`.green, `${exec.failed} failed`.red);
-    console.log('   ----------------------------------------------------------');
+        failed.forEach((test, index) => {
+          let parents = test.parents.map(p => ` ${p.label} `.bgRed).join(' • ');
 
-    if ( process.send ) {
-      process.send(JSON.stringify({ redtea : exec }));
-    }
+          if ( parents ) {
+            parents += ' •';
+          }
 
+          console.log(`${index + 1}/${failed.length}`.bgRed.bold, '--', parents, test.label.red.bold, ('failed after ' +printTime(test.time).duration).red.italic);
 
-    process.exit(1);
+          console.log(test.error.stack.yellow);
 
-  });
+          console.log();
+          console.log();
+        });
+      }
+
+      else {
+        console.log('  ', '                                                          '.bgGreen);
+        console.log('  ', `                     ALL TESTS PASSED                     `.bgGreen.bold);
+        console.log('  ', '                                                          '.bgGreen);
+      }
+
+      if ( process.send ) {
+        process.send(JSON.stringify({ redtea : {
+          children : result.children.map(t => ({
+            label : t.label, status : t.status, time : t.time, id : t.id,
+            children : t.children.map(t => ({
+              label : t.label, status : t.status, time : t.time, id : t.id
+            }))
+          })),
+          passed : result.passed.map(t => ({
+            label : t.label, status : t.status, time : t.time, id : t.id,
+            children : t.children.map(t => ({
+              label : t.label, status : t.status, time : t.time, id : t.id
+            }))
+          })),
+          failed : result.failed.map(t => ({
+            label : t.label, status : t.status, time : t.time, id : t.id,
+            error : {
+              name : t.error.name,
+              message : t.error.message,
+              stack : t.error.stack
+            },
+            children : t.children.map(t => ({
+              label : t.label, status : t.status, time : t.time, id : t.id
+            })),
+            parents : t.parents.map(t => ({
+              label : t.label, status : t.status, time : t.time, id : t.id
+            }))
+          })),
+          time : result.time
+        }}));
+      }
+
+      process.exit(failed.length);
+    })
+    .catch(error => console.log(error.stack));
+})
+.catch(error => console.log(error.stack));

@@ -22,7 +22,7 @@ function test (props) {
     // }));
 
     it('time out', () => new Promise((ok, ko) => {
-      setTimeout(ok, 1000);
+      setTimeout(ok, 500);
     }));
 
     it('Nest -- closure', it => {
@@ -33,30 +33,22 @@ function test (props) {
       });
     });
 
-    it('Nest -- array style', [it => {
-      it('should be nested array style', () => 1);
-
-      it('should nest', it => {
-        it('should be nested array style', () => 1);
-      });
-    }]);
-
     it('1', it => {
-      it('2');
+      it('2', () => {});
 
       it('3', it => {
-        it('4');
+        it('4', () => {});
 
         it('5', it => {
-          it('6');
+          it('6', () => {});
 
           it('7', it => {
-            it('8');
+            it('8', () => {});
           });
         });
 
         it('9', it => {
-          it('10');
+          it('10', () => {});
         });
       });
 
@@ -65,6 +57,10 @@ function test (props) {
       it('reusable old synatx', describe.use(() => reusable()));
 
     });
+
+    // it('kap', it => {
+    //   it('Fail', () => { throw new Error('ok?')});
+    // });
 
   });
 }

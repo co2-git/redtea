@@ -7,114 +7,40 @@ import child_process              from 'child_process';
 import colors                     from 'colors';
 import sequencer                  from 'sequencer';
 import describe                   from '..';
+import Test                       from './test';
 
 let i = 0
 
+function flattenArray (arr) {
+  return arr.reduce((r, i, p) => {
+      if ( Array.isArray(i) ) {
+        r.push(...flattenArray(i));
+      }
+      else {
+        r.push(i);
+      }
+      return r;
+    },
+    []
+  );
+}
+
 class Bin extends EventEmitter {
 
-  id = i++
-
-  tests = 0
-
-  passed = 0
-
-  failed = 0
-
-  time = 0
-
-  /** [<function>] */
-  required = []
-
-  /** <number> */
-  startsAt
-
-  /** <number> */
-  stopsAt
-
-  // if paths are relative
-  dir = ''
-
-  /** [<string>]] */
-  files = []
-
-  /** [<string>]] */
-  flags = []
-
-  done = false
-
-  constructor (files, props, flags) {
-
-    super();
-
-    // Start timer
-
-    this.startsAt = Date.now();
-
-    // Begin
-
-    process.nextTick(() => {
-
-      try {
-        this.flags = flags;
-
-        sequencer(
-
-          () => this.getFiles(...files),
-
-          () => this.getFunctions(),
-
-          () => this.runFunctions()
-
-        )
-          .then(() => {
-
-            this.done = true;
-
-            this.stopsAt = Date.now();
-
-            this.emit('passed');
-          })
-
-          .catch(this.emit.bind(this, 'error'));
-      }
-      catch ( error ) {
-        this.emit('error', error);
-
-      }
-    });
-
-  }
-
-  getFiles (...files) {
+  static getFiles (...files) {
     return new Promise((ok, ko) => {
-      try {
-
-        const promises = files.map(file => new Promise((ok, ko) => {
-
-          try {
-
-            const absolutePath = /^\//.test(file) ? file :
-              path.join(process.cwd(), file);
-
-            this.getFile(absolutePath).then(ok, ko);
-
-          }
-
-          catch ( error ) { ko(error) }
-
-        }));
-
-        Promise.all(promises).then(ok, ko);
-
-      }
-
-      catch ( error ) { ko(error) }
-
+      Promise
+        .all(files.map(file => this.getFile(file)))
+        .then(results => ok(flattenArray(results)))
+        .catch(ko);
     });
   }
 
-  getFile (file) {
-    return sequencer(
+  static getFile (file) {
+
+    file = /^\//.test(file) ? file : path.join(process.cwd(), file);
+
+    return sequencer.pipe(
 
       () => sequencer.promisify(fs.stat, [file]),
 
@@ -127,17 +53,14 @@ class Bin extends EventEmitter {
             .catch(ko)
         }
         else {
-          if ( this.files.indexOf(file) === -1 ) {
-            this.files.push(file);
-          }
-          ok();
+          ok(file);
         }
       })
 
     );
   }
 
-  scandir (dir) {
+  static scandir (dir) {
     return new Promise((ok, ko) => {
 
       const files = [];
@@ -153,84 +76,108 @@ class Bin extends EventEmitter {
     });
   }
 
-  getFunctions () {
-
-    const requires = this.files.map(file => new Promise((ok, ko) => {
-
-      if ( this.flags.indexOf('fork') > -1 ) {
-        this.required.push(this.fork(file));
-      }
-      else {
-        let fn = require(file);
-
-        if ( typeof fn !== 'function' ) {
-          let serialization = typeof fn;
-
-          try {
-            serialization += ' ' + JSON.stringify(fn);
+  static getFunctions (files, props = {}, flags = []) {
+    return new Promise((ok, ko) => {
+      try {
+        const required = files.map(file => {
+          if ( flags.indexOf('fork') > -1 ) {
+            return this.fork(file);
           }
-          catch ( error ) {}
 
-          this.required.push(props => describe('redtea imports file ' + file,
-            it => {
-              it('File should export a function', () => {
-                throw new Error('Expected a function, got ' + serialization);
-              });
+          let fn = require(file);
+
+          if ( typeof fn !== 'function' ) {
+            let serialization = typeof fn;
+
+            try {
+              serialization += ' ' + JSON.stringify(fn);
             }
-          ));
-        }
-        else {
-          this.required.push(fn);
-        }
-      }
-      ok();
-    }));
+            catch ( error ) {}
 
-    return Promise.all(requires);
+            return props => describe('redtea imports file ' + file,
+              it => {
+                it('File should export a function', () => {
+                  throw new Error('Expected a function, got ' + serialization);
+                });
+              }
+            );
+          }
+          else {
+            return fn;
+          }
+        });
+
+        ok(required);
+      }
+      catch ( error ) {
+        ko(error);
+      }
+    });
   }
 
-  runFunctions () {
-    return sequencer(this.required.map(fn => () => new Promise((ok, ko) => {
-      fn()
-        .then(stats => {
-          for ( let stat of ['tests', 'passed', 'failed', 'time'] ) {
-            if ( typeof stats[stat] === 'number' ) {
-              this[stat] += stats[stat];
+  static fork (file) {
+    let results = {};
+
+    return props => {
+
+      const p = new Promise((ok, ko) => {
+        const child = child_process.fork(
+          path.resolve(__dirname, '../bin/index.js'),
+          [file]
+        );
+
+        child
+          .on('error', ko)
+          .on('exit', status => ok(results))
+          .on('message', message => {
+
+            message = JSON.parse(message);
+
+            if ( 'redtea' in message ) {
+              const { redtea } = message;
+
+              results = redtea;
             }
-          }
-          if ( typeof stats.tests !== 'number' ) {
-            this.tests ++;
-            this.failed ++;
-          }
-          ok();
+          });
+      });
+
+      p.live = new EventEmitter();
+
+      return p;
+    }
+  }
+
+  static runFunctions (fns) {
+    const live = new EventEmitter();
+
+    const promise = sequencer(fns.map(fn => () => new Promise((ok, ko) => {
+      const test = fn();
+
+      test.live
+        .on('error', live.emit.bind(live, 'error'))
+        .on('test', live.emit.bind(live, 'test'))
+        .on('passed', live.emit.bind(live, 'passed'))
+        .on('failed', live.emit.bind(live, 'failed'));
+
+      test
+        .then(testResults => {
+          // for ( let stat of ['tests', 'passed', 'failed', 'time'] ) {
+          //   if ( typeof stats[stat] === 'number' ) {
+          //     this[stat] += stats[stat];
+          //   }
+          // }
+          // if ( stats && typeof stats.tests !== 'number' ) {
+          //   this.tests ++;
+          //   this.failed ++;
+          // }
+          ok(testResults);
         })
         .catch(ko);
     })));
-  }
 
-  fork (file) {
-    let results = {};
+    promise.live = live;
 
-    return props => new Promise((ok, ko) => {
-      const child = child_process.fork(
-        path.resolve(__dirname, '../bin/index.js'),
-        [file]
-      );
-
-      child
-        .on('error', ko)
-        .on('exit', status => ok(results))
-        .on('message', message => {
-
-          message = JSON.parse(message);
-
-          if ( 'redtea' in message ) {
-            const { redtea } = message;
-
-            results = redtea;
-          }
-        });
-    });
+    return promise;
   }
 }
 

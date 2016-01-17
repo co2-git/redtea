@@ -44,7 +44,7 @@ function test(props) {
 
     it('time out', function () {
       return new Promise(function (ok, ko) {
-        setTimeout(ok, 1000);
+        setTimeout(ok, 500);
       });
     });
 
@@ -60,34 +60,22 @@ function test(props) {
       });
     });
 
-    it('Nest -- array style', [function (it) {
-      it('should be nested array style', function () {
-        return 1;
-      });
-
-      it('should nest', function (it) {
-        it('should be nested array style', function () {
-          return 1;
-        });
-      });
-    }]);
-
     it('1', function (it) {
-      it('2');
+      it('2', function () {});
 
       it('3', function (it) {
-        it('4');
+        it('4', function () {});
 
         it('5', function (it) {
-          it('6');
+          it('6', function () {});
 
           it('7', function (it) {
-            it('8');
+            it('8', function () {});
           });
         });
 
         it('9', function (it) {
-          it('10');
+          it('10', function () {});
         });
       });
 
@@ -99,6 +87,10 @@ function test(props) {
         return reusable();
       }));
     });
+
+    // it('kap', it => {
+    //   it('Fail', () => { throw new Error('ok?')});
+    // });
   });
 }
 
