@@ -87,7 +87,7 @@ process.argv.filter(function (arg, index) {
   var files = _results[0];
   var functions = _results[1];
 
-  var runner = _libBin2['default'].runFunctions(functions);
+  var runner = _libBin2['default'].runFunctions(functions, props, flags);
 
   runner.live.on('error', function (error) {
     return console.log(error.stack);
@@ -163,27 +163,27 @@ process.argv.filter(function (arg, index) {
   runner.then(function (results) {
     done = true;
 
-    var _results2 = _slicedToArray(results, 1);
+    var tests = [],
+        passed = [],
+        failed = [],
+        time = 0;
 
-    var result = _results2[0];
-
-    // console.log(result);
-
-    var time = result.time;
+    results.forEach(function (result) {
+      tests = tests.concat(result.children.filter(function (t) {
+        return !t.children.length;
+      }));
+      passed = passed.concat(result.passed.filter(function (t) {
+        return !t.children.length;
+      }));
+      failed = failed.concat(result.failed.filter(function (t) {
+        return !t.children.length;
+      }));
+      time += result.time;
+    });
 
     var _printTime3 = printTime(time);
 
     var duration = _printTime3.duration;
-
-    var tests = result.children.filter(function (t) {
-      return !t.children.length;
-    });
-    var passed = result.passed.filter(function (t) {
-      return !t.children.length;
-    });
-    var failed = result.failed.filter(function (t) {
-      return !t.children.length;
-    });
 
     console.log();
     console.log('   ----------------------------------------------------------');
@@ -221,7 +221,7 @@ process.argv.filter(function (arg, index) {
 
     if (process.send) {
       process.send(JSON.stringify({ redtea: {
-          children: result.children.map(function (t) {
+          children: tests.map(function (t) {
             return {
               label: t.label, status: t.status, time: t.time, id: t.id,
               children: t.children.map(function (t) {
@@ -231,7 +231,7 @@ process.argv.filter(function (arg, index) {
               })
             };
           }),
-          passed: result.passed.map(function (t) {
+          passed: passed.map(function (t) {
             return {
               label: t.label, status: t.status, time: t.time, id: t.id,
               children: t.children.map(function (t) {
@@ -241,7 +241,7 @@ process.argv.filter(function (arg, index) {
               })
             };
           }),
-          failed: result.failed.map(function (t) {
+          failed: failed.map(function (t) {
             return {
               label: t.label, status: t.status, time: t.time, id: t.id,
               error: {
@@ -261,7 +261,7 @@ process.argv.filter(function (arg, index) {
               })
             };
           }),
-          time: result.time
+          time: time
         } }));
     }
 

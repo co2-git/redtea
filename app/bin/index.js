@@ -78,7 +78,7 @@ sequencer(
 .then(results => {
   const [files, functions] = results;
 
-  const runner = Bin.runFunctions(functions);
+  const runner = Bin.runFunctions(functions, props, flags);
 
   runner.live
     .on('error', error => console.log(error.stack))
@@ -154,17 +154,16 @@ sequencer(
     .then(results => {
       done = true;
 
-      const [ result ] = results;
+      let tests = [], passed = [], failed = [], time = 0;
 
-      // console.log(result);
-
-      const { time } = result;
+      results.forEach(result => {
+        tests = tests.concat(result.children.filter(t => ! t.children.length));
+        passed = passed.concat(result.passed.filter(t => ! t.children.length));
+        failed = failed.concat(result.failed.filter(t => ! t.children.length));
+        time += result.time;
+      });
 
       const { duration } = printTime(time);
-
-      const tests = result.children.filter(t => ! t.children.length);
-      const passed = result.passed.filter(t => ! t.children.length);
-      const failed = result.failed.filter(t => ! t.children.length);
 
       console.log();
       console.log('   ----------------------------------------------------------');
@@ -202,19 +201,19 @@ sequencer(
 
       if ( process.send ) {
         process.send(JSON.stringify({ redtea : {
-          children : result.children.map(t => ({
+          children : tests.map(t => ({
             label : t.label, status : t.status, time : t.time, id : t.id,
             children : t.children.map(t => ({
               label : t.label, status : t.status, time : t.time, id : t.id
             }))
           })),
-          passed : result.passed.map(t => ({
+          passed : passed.map(t => ({
             label : t.label, status : t.status, time : t.time, id : t.id,
             children : t.children.map(t => ({
               label : t.label, status : t.status, time : t.time, id : t.id
             }))
           })),
-          failed : result.failed.map(t => ({
+          failed : failed.map(t => ({
             label : t.label, status : t.status, time : t.time, id : t.id,
             error : {
               name : t.error.name,
@@ -228,7 +227,7 @@ sequencer(
               label : t.label, status : t.status, time : t.time, id : t.id
             }))
           })),
-          time : result.time
+          time : time
         }}));
       }
 

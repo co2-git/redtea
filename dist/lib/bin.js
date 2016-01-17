@@ -6,7 +6,7 @@ Object.defineProperty(exports, '__esModule', {
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _get = function get(_x3, _x4, _x5) { var _again = true; _function: while (_again) { var object = _x3, property = _x4, receiver = _x5; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x3 = parent; _x4 = property; _x5 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _get = function get(_x5, _x6, _x7) { var _again = true; _function: while (_again) { var object = _x5, property = _x6, receiver = _x7; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x5 = parent; _x6 = property; _x7 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -205,6 +205,9 @@ var Bin = (function (_EventEmitter) {
   }, {
     key: 'runFunctions',
     value: function runFunctions(fns) {
+      var props = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+      var flags = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
+
       var live = new _events.EventEmitter();
 
       var promise = (0, _sequencer2['default'])(fns.map(function (fn) {
@@ -214,18 +217,7 @@ var Bin = (function (_EventEmitter) {
 
             test.live.on('error', live.emit.bind(live, 'error')).on('test', live.emit.bind(live, 'test')).on('passed', live.emit.bind(live, 'passed')).on('failed', live.emit.bind(live, 'failed'));
 
-            test.then(function (testResults) {
-              // for ( let stat of ['tests', 'passed', 'failed', 'time'] ) {
-              //   if ( typeof stats[stat] === 'number' ) {
-              //     this[stat] += stats[stat];
-              //   }
-              // }
-              // if ( stats && typeof stats.tests !== 'number' ) {
-              //   this.tests ++;
-              //   this.failed ++;
-              // }
-              ok(testResults);
-            })['catch'](ko);
+            test.then(ok, ko);
           });
         };
       }));

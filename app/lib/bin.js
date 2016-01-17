@@ -157,7 +157,7 @@ class Bin extends EventEmitter {
     }
   }
 
-  static runFunctions (fns) {
+  static runFunctions (fns, props = {}, flags = []) {
     const live = new EventEmitter();
 
     const promise = sequencer(fns.map(fn => () => new Promise((ok, ko) => {
@@ -169,20 +169,7 @@ class Bin extends EventEmitter {
         .on('passed', live.emit.bind(live, 'passed'))
         .on('failed', live.emit.bind(live, 'failed'));
 
-      test
-        .then(testResults => {
-          // for ( let stat of ['tests', 'passed', 'failed', 'time'] ) {
-          //   if ( typeof stats[stat] === 'number' ) {
-          //     this[stat] += stats[stat];
-          //   }
-          // }
-          // if ( stats && typeof stats.tests !== 'number' ) {
-          //   this.tests ++;
-          //   this.failed ++;
-          // }
-          ok(testResults);
-        })
-        .catch(ko);
+      test.then(ok, ko);
     })));
 
     promise.live = live;
