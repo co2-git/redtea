@@ -1,9 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
-var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 var _colors = require('colors');
 
@@ -13,13 +11,17 @@ var _sequencer = require('sequencer');
 
 var _sequencer2 = _interopRequireDefault(_sequencer);
 
-var _libBin = require('../lib/bin');
+var _bin = require('../lib/bin');
 
-var _libBin2 = _interopRequireDefault(_libBin);
+var _bin2 = _interopRequireDefault(_bin);
 
-var _packageJson = require('../../package.json');
+var _package = require('../../package.json');
 
-var _packageJson2 = _interopRequireDefault(_packageJson);
+var _package2 = _interopRequireDefault(_package);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+console.log({ sequencer: _sequencer2.default });
 
 function printTime(time) {
   var duration = '';
@@ -50,7 +52,7 @@ process.on('exit', function () {
   }
 });
 
-console.log(('redtea v' + _packageJson2['default'].version).red.bold);
+console.log(('redtea v' + _package2.default.version).red.bold);
 
 if (process.argv[2] === '-v') {
   done = true;
@@ -77,17 +79,18 @@ process.argv.filter(function (arg, index) {
   }
 });
 
-(0, _sequencer2['default'])(function () {
-  return _libBin2['default'].getFiles.apply(_libBin2['default'], files);
+(0, _sequencer2.default)(function () {
+  return _bin2.default.getFiles.apply(_bin2.default, files);
 }, function (files) {
-  return _libBin2['default'].getFunctions(files, props, flags);
+  return _bin2.default.getFunctions(files, props, flags);
 }).then(function (results) {
   var _results = _slicedToArray(results, 2);
 
   var files = _results[0];
   var functions = _results[1];
 
-  var runner = _libBin2['default'].runFunctions(functions, props, flags);
+
+  var runner = _bin2.default.runFunctions(functions, props, flags);
 
   runner.live.on('error', function (error) {
     return console.log(error.stack);
@@ -97,6 +100,7 @@ process.argv.filter(function (arg, index) {
 
       var duration = _printTime.duration;
       var time = _printTime.time;
+
 
       if (time < 50) {
         duration = ('(' + duration + ')').white;
@@ -128,6 +132,7 @@ process.argv.filter(function (arg, index) {
 
       var duration = _printTime2.duration;
       var time = _printTime2.time;
+
 
       if (time < 50) {
         duration = ('(' + duration + ')').white;
@@ -185,6 +190,7 @@ process.argv.filter(function (arg, index) {
 
     var duration = _printTime3.duration;
 
+
     console.log();
     console.log('   ----------------------------------------------------------');
     console.log('  ', (tests.length + ' tests in ' + duration).bold, (passed.length + ' passed').green, (failed.length + ' failed').red);
@@ -200,10 +206,10 @@ process.argv.filter(function (arg, index) {
       failed.forEach(function (test, index) {
         var parents = test.parents.map(function (p) {
           return (' ' + p.label + ' ').bgRed;
-        }).join(' • ');
+        }).join('\n');
 
         if (parents) {
-          parents += ' •';
+          parents += '\n';
         }
 
         console.log((index + 1 + '/' + failed.length).bgRed.bold, '--', parents, test.label.red.bold, ('failed after ' + printTime(test.time).duration).red.italic);
@@ -266,9 +272,9 @@ process.argv.filter(function (arg, index) {
     }
 
     process.exit(failed.length);
-  })['catch'](function (error) {
+  }).catch(function (error) {
     return console.log(error.stack);
   });
-})['catch'](function (error) {
+}).catch(function (error) {
   return console.log(error.stack);
 });

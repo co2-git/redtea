@@ -1,17 +1,17 @@
 'use strict';
 
-Object.defineProperty(exports, '__esModule', {
+Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+var _it = require('./lib/it');
 
-var _libIt = require('./lib/it');
+var _it2 = _interopRequireDefault(_it);
 
-var _libIt2 = _interopRequireDefault(_libIt);
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function describe(label, story) {
-  var test = new _libIt2['default'](label, story);
+  var test = new _it2.default(label, story);
   var promise = test.run();
   promise.live = test;
   return promise;
@@ -33,5 +33,4 @@ describe.pause = function (ms) {
   };
 };
 
-exports['default'] = describe;
-module.exports = exports['default'];
+exports.default = describe;

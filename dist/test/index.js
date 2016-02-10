@@ -1,10 +1,8 @@
 'use strict';
 
-Object.defineProperty(exports, '__esModule', {
+Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 var _should = require('should');
 
@@ -13,6 +11,8 @@ var _should2 = _interopRequireDefault(_should);
 var _ = require('..');
 
 var _2 = _interopRequireDefault(_);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function reusable() {
   var foo = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
@@ -25,7 +25,7 @@ function reusable() {
 }
 
 function test(props) {
-  return (0, _2['default'])('redtea v2.1', function (it) {
+  return (0, _2.default)('redtea v2.1', function (it) {
     it('synchronous', function () {
       return 1;
     });
@@ -83,7 +83,7 @@ function test(props) {
         return reusable()(it);
       });
 
-      it('reusable old synatx', _2['default'].use(function () {
+      it('reusable old synatx', _2.default.use(function () {
         return reusable();
       }));
     });
@@ -94,5 +94,4 @@ function test(props) {
   });
 }
 
-exports['default'] = test;
-module.exports = exports['default'];
+exports.default = test;

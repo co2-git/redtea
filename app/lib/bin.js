@@ -96,6 +96,12 @@ class Bin extends EventEmitter {
 
           let fn = require(file);
 
+          if ( typeof fn.default === 'function' ) {
+            fn = fn.default;
+          }
+
+          console.log({ fn });
+
           if ( typeof fn !== 'function' ) {
             let serialization = typeof fn;
 

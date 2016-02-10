@@ -5,6 +5,8 @@ import sequencer        from 'sequencer';
 import Bin              from '../lib/bin';
 import packageJSON      from '../../package.json';
 
+console.log({ sequencer });
+
 function printTime (time) {
   let duration = '';
 
@@ -178,10 +180,10 @@ sequencer(
         console.log();
 
         failed.forEach((test, index) => {
-          let parents = test.parents.map(p => ` ${p.label} `.bgRed).join(' • ');
+          let parents = test.parents.map(p => ` ${p.label} `.bgRed).join('\n');
 
           if ( parents ) {
-            parents += ' •';
+            parents += '\n';
           }
 
           console.log(`${index + 1}/${failed.length}`.bgRed.bold, '--', parents, test.label.red.bold, ('failed after ' +printTime(test.time).duration).red.italic);

@@ -7,14 +7,14 @@ let id = 0;
 
 class It extends EventEmitter {
 
-  start
-  end
-  time
-  status = 'iddle'
-  parents = []
-  children = []
-  passed = []
-  failed = []
+  start;
+  end;
+  time;
+  status = 'iddle';
+  parents = [];
+  children = [];
+  passed = [];
+  failed = [];
 
   constructor (label, story, parents) {
     super();
