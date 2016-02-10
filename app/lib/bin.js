@@ -5,7 +5,7 @@ import fs                         from 'fs-extra';
 import path                       from 'path';
 import child_process              from 'child_process';
 import colors                     from 'colors';
-import sequencer                  from 'sequencer';
+import sequencer                  from 'promise-sequencer';
 import describe                   from '..';
 
 let i = 0

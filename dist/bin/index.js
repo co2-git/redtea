@@ -7,9 +7,9 @@ var _colors = require('colors');
 
 var _colors2 = _interopRequireDefault(_colors);
 
-var _sequencer = require('sequencer');
+var _promiseSequencer = require('promise-sequencer');
 
-var _sequencer2 = _interopRequireDefault(_sequencer);
+var _promiseSequencer2 = _interopRequireDefault(_promiseSequencer);
 
 var _bin = require('../lib/bin');
 
@@ -21,7 +21,7 @@ var _package2 = _interopRequireDefault(_package);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-console.log({ sequencer: _sequencer2.default });
+console.log({ sequencer: _promiseSequencer2.default });
 
 function printTime(time) {
   var duration = '';
@@ -79,7 +79,7 @@ process.argv.filter(function (arg, index) {
   }
 });
 
-(0, _sequencer2.default)(function () {
+(0, _promiseSequencer2.default)(function () {
   return _bin2.default.getFiles.apply(_bin2.default, files);
 }, function (files) {
   return _bin2.default.getFunctions(files, props, flags);

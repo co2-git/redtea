@@ -1,7 +1,7 @@
 'use strict';
 
 import { EventEmitter } from 'events';
-import sequencer from 'sequencer';
+import sequencer from 'promise-sequencer';
 
 let id = 0;
 

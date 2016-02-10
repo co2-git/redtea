@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import colors           from 'colors';
-import sequencer        from 'sequencer';
+import sequencer        from 'promise-sequencer';
 import Bin              from '../lib/bin';
 import packageJSON      from '../../package.json';
 

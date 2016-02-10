@@ -10,9 +10,9 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _events = require('events');
 
-var _sequencer = require('sequencer');
+var _promiseSequencer = require('promise-sequencer');
 
-var _sequencer2 = _interopRequireDefault(_sequencer);
+var _promiseSequencer2 = _interopRequireDefault(_promiseSequencer);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -127,7 +127,7 @@ var It = function (_EventEmitter) {
         }).then(function () {
           _this2.emit('test', _this2);
 
-          (0, _sequencer2.default)(_this2.children.map(function (child) {
+          (0, _promiseSequencer2.default)(_this2.children.map(function (child) {
             return function () {
               return child.run();
             };

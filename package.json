@@ -1,6 +1,6 @@
 {
   "name": "redtea",
-  "version": "3.4.0",
+  "version": "3.4.1",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -30,7 +30,7 @@
   "dependencies": {
     "colors": "^1.1.2",
     "fs-extra": "^0.26.5",
-    "sequencer": "0.0.3"
+    "promise-sequencer": "^2.0.1"
   },
   "devDependencies": {
     "babel-cli": "^6.5.1",

@@ -26,9 +26,9 @@ var _colors = require('colors');
 
 var _colors2 = _interopRequireDefault(_colors);
 
-var _sequencer = require('sequencer');
+var _promiseSequencer = require('promise-sequencer');
 
-var _sequencer2 = _interopRequireDefault(_sequencer);
+var _promiseSequencer2 = _interopRequireDefault(_promiseSequencer);
 
 var _ = require('..');
 
@@ -96,8 +96,8 @@ var Bin = function (_EventEmitter) {
 
       file = /^\//.test(file) ? file : _path2.default.join(process.cwd(), file);
 
-      return _sequencer2.default.pipe(function () {
-        return _sequencer2.default.promisify(_fsExtra2.default.stat, [file]);
+      return _promiseSequencer2.default.pipe(function () {
+        return _promiseSequencer2.default.promisify(_fsExtra2.default.stat, [file]);
       }, function (stat) {
         return new Promise(function (ok, ko) {
           if (stat.isDirectory()) {
@@ -219,7 +219,7 @@ var Bin = function (_EventEmitter) {
 
       var live = new _events.EventEmitter();
 
-      var promise = (0, _sequencer2.default)(fns.map(function (fn) {
+      var promise = (0, _promiseSequencer2.default)(fns.map(function (fn) {
         return function () {
           return new Promise(function (ok, ko) {
             var test = fn();
