@@ -20,7 +20,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } //  weak
 
 var id = 0;
 
@@ -43,10 +43,6 @@ var It = function (_EventEmitter) {
     _this.label = label;
     _this.story = story;
 
-    if (Array.isArray(story)) {
-      _this.story = story[0];
-    }
-
     _this.status = 'ready';
     _this.id = id++;
     return _this;
@@ -64,22 +60,16 @@ var It = function (_EventEmitter) {
     value: function run() {
       var _this2 = this;
 
-      return new Promise(function (ok, ko) {
-
+      return new Promise(function (resolveRun) {
         _this2.start = Date.now();
-
         _this2.status = 'started';
+        var fn = void 0;
 
-        var fn = undefined,
-            status = undefined;
-
-        new Promise(function (ok, ko) {
+        new Promise(function (resolve) {
           try {
-
             if (typeof _this2.story !== 'function') {
               (function () {
                 var story = _this2.story;
-                console.log(story);
                 _this2.story = function (it) {
                   it('should be a function', function () {
                     throw new Error('Story must be a function, got ' + (typeof story === 'undefined' ? 'undefined' : _typeof(story)));
@@ -91,7 +81,6 @@ var It = function (_EventEmitter) {
             fn = _this2.story(function (label, story) {
               var child = new It(label, story, _this2.parents.concat([_this2])).on('test', function (test) {
                 _this2.emit('test', test);
-
                 if (test !== child) {
                   _this2.children.push(test);
                 }
@@ -104,29 +93,25 @@ var It = function (_EventEmitter) {
               });
 
               _this2.children.push(child);
-
-              // child.run();
             });
 
             if (fn && typeof fn.then === 'function') {
-              return fn.then(ok).catch(function (error) {
+              return fn.then(resolve).catch(function (error) {
                 // this.emit('test', this);
                 _this2.fails(error);
-                return ok();
+                return resolve();
               });
             }
 
-            ok();
+            resolve();
           } catch (error) {
-            // this.emit('test', this);
             _this2.end = Date.now();
             _this2.time = _this2.end - _this2.start;
             _this2.fails(error);
-            return ok();
+            return resolve();
           }
         }).then(function () {
           _this2.emit('test', _this2);
-
           (0, _promiseSequencer2.default)(_this2.children.map(function (child) {
             return function () {
               return child.run();
@@ -143,7 +128,7 @@ var It = function (_EventEmitter) {
               _this2.status = 'passed';
             }
 
-            ok(_this2);
+            resolveRun(_this2);
           }).catch(function (error) {
             _this2.end = Date.now();
             _this2.time = _this2.end - _this2.start;

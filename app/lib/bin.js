@@ -1,24 +1,22 @@
-'use strict';
+// @flow weak
 
-import { EventEmitter }           from 'events';
-import fs                         from 'fs-extra';
-import path                       from 'path';
-import child_process              from 'child_process';
-import colors                     from 'colors';
-import sequencer                  from 'promise-sequencer';
-import describe                   from '..';
+import {EventEmitter} from 'events';
+import fs from 'fs-extra';
+import path from 'path';
+import child_process from 'child_process';
+import 'colors';
+import sequencer from 'promise-sequencer';
+import describe from '..';
 
-let i = 0
-
-function flattenArray (arr) {
-  return arr.reduce((r, i, p) => {
-      if ( Array.isArray(i) ) {
-        r.push(...flattenArray(i));
+function flattenArray(arr: Array<any>): Array<any> {
+  return arr.reduce(
+    (reduced: Array<any>, item: any): Array<any> => {
+      if (Array.isArray(item)) {
+        reduced.push(...flattenArray(item));
+      } else {
+        reduced.push(item);
       }
-      else {
-        r.push(i);
-      }
-      return r;
+      return reduced;
     },
     []
   );
@@ -26,91 +24,89 @@ function flattenArray (arr) {
 
 class Bin extends EventEmitter {
 
-  static getFiles (...files) {
-    return new Promise((ok, ko) => {
+  static getFiles(...files: Array<any>): Promise {
+    return new Promise((resolve, reject) => {
       Promise
-        .all(files.map(file => this.getFile(file)))
+        .all(files.map((file: string): Promise => this.getFile(file)))
         .then(results => {
-          results = flattenArray(results).reduce(
-            (unique, r) => {
-              if ( unique.indexOf(r) === -1 ) {
-                unique.push(r);
+          const flattened_results = flattenArray(results).reduce(
+            (unique, result) => {
+              if (unique.indexOf(result) === -1) {
+                unique.push(result);
               }
               return unique;
             },
             []
           );
-          ok(results);
+          resolve(flattened_results);
         })
-        .catch(ko);
+        .catch(reject);
     });
   }
 
-  static getFile (file) {
-
-    file = /^\//.test(file) ? file : path.join(process.cwd(), file);
+  static getFile(file: string): Promise {
+    const formatted_file = /^\//.test(file) ?
+      file : path.join(process.cwd(), file);
 
     return sequencer.pipe(
-
-      () => sequencer.promisify(fs.stat, [file]),
-
-      stat => new Promise((ok, ko) => {
-        if ( stat.isDirectory() ) {
+      () => sequencer.promisify(fs.stat, [formatted_file]),
+      stat => new Promise((resolve, reject) => {
+        if (stat.isDirectory()) {
           this.scandir(file)
             .then(files => {
-              this.getFiles(...files).then(ok, ko);
+              this.getFiles(...files).then(resolve, reject);
             })
-            .catch(ko)
-        }
-        else {
-          ok(file);
+            .catch(reject);
+        } else {
+          resolve(file);
         }
       })
-
     );
   }
 
-  static scandir (dir) {
-    return new Promise((ok, ko) => {
-
+  static scandir(dir: string): Promise {
+    return new Promise((resolve, reject) => {
       const files = [];
-
       fs.walk(dir)
-        .on('error', ko)
-        .on('data', file => {
-          if ( file.path.replace(/\/$/, '') !== dir.replace(/\/$/, '') ) {
+        .on('error', reject)
+        .on('data', (file: Object) => {
+          if (file.path.replace(/\/$/, '') !== dir.replace(/\/$/, '')) {
             files.push(file.path);
           }
         })
-        .on('end', () => ok(files));
+        .on('end', () => resolve(files));
     });
   }
 
-  static getFunctions (files, props = {}, flags = []) {
-    return new Promise((ok, ko) => {
+  static getFunctions(
+    files: Array<string>,
+    props: Object = {},
+    flags: Array<string> = []
+  ): Promise {
+    return new Promise((resolve, reject) => {
       try {
-        const required = files.map(file => {
-          if ( flags.indexOf('fork') > -1 ) {
+        const required: Array<Function> = files.map(file => {
+          if (flags.indexOf('fork') > -1) {
             return this.fork(file);
           }
 
           let fn = require(file);
 
-          if ( typeof fn.default === 'function' ) {
+          if (typeof fn.default === 'function') {
             fn = fn.default;
           }
 
-          console.log({ fn });
-
-          if ( typeof fn !== 'function' ) {
+          if (typeof fn !== 'function') {
             let serialization = typeof fn;
 
             try {
               serialization += ' ' + JSON.stringify(fn);
+            } catch (error) {
+              console.warn('redtea> could not serialize');
             }
-            catch ( error ) {}
 
-            return props => describe('redtea imports file ' + file,
+            return () => describe(
+              'redtea imports file ' + file,
               it => {
                 it('File should export a function', () => {
                   throw new Error('Expected a function, got ' + serialization);
@@ -118,65 +114,63 @@ class Bin extends EventEmitter {
               }
             );
           }
-          else {
-            return fn;
-          }
+          return fn;
         });
 
-        ok(required);
-      }
-      catch ( error ) {
-        ko(error);
+        resolve(required);
+      } catch (error) {
+        reject(error);
       }
     });
   }
 
-  static fork (file) {
+  static fork(file: string): Function {
     let results = {};
 
-    return props => {
+    return () => {
+      const promise = sequencer(
+        () => new Promise((resolve, reject) => {
+          const child = child_process.fork(
+            path.resolve(__dirname, '../bin/index.js'),
+            [file]
+          );
 
-      const p = new Promise((ok, ko) => {
-        const child = child_process.fork(
-          path.resolve(__dirname, '../bin/index.js'),
-          [file]
-        );
+          child
+            .on('error', reject)
+            .on('exit', () => resolve(results))
+            .on('message', message => {
+              const parsed_message = JSON.parse(message);
 
-        child
-          .on('error', ko)
-          .on('exit', status => ok(results))
-          .on('message', message => {
+              if ('redtea' in parsed_message) {
+                const {redtea} = parsed_message;
 
-            message = JSON.parse(message);
-
-            if ( 'redtea' in message ) {
-              const { redtea } = message;
-
-              results = redtea;
-            }
-          });
-      });
-
-      p.live = new EventEmitter();
-
-      return p;
-    }
+                results = redtea;
+              }
+            });
+        })
+      );
+      promise.live = new EventEmitter();
+      return promise;
+    };
   }
 
-  static runFunctions (fns, props = {}, flags = []) {
+  static runFunctions(fns: Array<Function>): Promise {
     const live = new EventEmitter();
 
-    const promise = sequencer(fns.map(fn => () => new Promise((ok, ko) => {
-      const test = fn();
+    const eachFunction = (fn: Function): Function => () =>
+      new Promise((resolve, reject) => {
+        const test = fn();
 
-      test.live
-        .on('error', live.emit.bind(live, 'error'))
-        .on('test', live.emit.bind(live, 'test'))
-        .on('passed', live.emit.bind(live, 'passed'))
-        .on('failed', live.emit.bind(live, 'failed'));
+        test.live
+          .on('error', live.emit.bind(live, 'error'))
+          .on('test', live.emit.bind(live, 'test'))
+          .on('passed', live.emit.bind(live, 'passed'))
+          .on('failed', live.emit.bind(live, 'failed'));
 
-      test.then(ok, ko);
-    })));
+        test.then(resolve, reject);
+      });
+
+    const promise = sequencer(fns.map(eachFunction));
 
     promise.live = live;
 

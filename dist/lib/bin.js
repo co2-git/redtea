@@ -22,9 +22,7 @@ var _child_process = require('child_process');
 
 var _child_process2 = _interopRequireDefault(_child_process);
 
-var _colors = require('colors');
-
-var _colors2 = _interopRequireDefault(_colors);
+require('colors');
 
 var _promiseSequencer = require('promise-sequencer');
 
@@ -42,18 +40,16 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-var i = 0;
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } } //  weak
 
 function flattenArray(arr) {
-  return arr.reduce(function (r, i, p) {
-    if (Array.isArray(i)) {
-      r.push.apply(r, _toConsumableArray(flattenArray(i)));
+  return arr.reduce(function (reduced, item) {
+    if (Array.isArray(item)) {
+      reduced.push.apply(reduced, _toConsumableArray(flattenArray(item)));
     } else {
-      r.push(i);
+      reduced.push(item);
     }
-    return r;
+    return reduced;
   }, []);
 }
 
@@ -75,18 +71,18 @@ var Bin = function (_EventEmitter) {
         files[_key] = arguments[_key];
       }
 
-      return new Promise(function (ok, ko) {
+      return new Promise(function (resolve, reject) {
         Promise.all(files.map(function (file) {
           return _this2.getFile(file);
         })).then(function (results) {
-          results = flattenArray(results).reduce(function (unique, r) {
-            if (unique.indexOf(r) === -1) {
-              unique.push(r);
+          var flattened_results = flattenArray(results).reduce(function (unique, result) {
+            if (unique.indexOf(result) === -1) {
+              unique.push(result);
             }
             return unique;
           }, []);
-          ok(results);
-        }).catch(ko);
+          resolve(flattened_results);
+        }).catch(reject);
       });
     }
   }, {
@@ -94,18 +90,18 @@ var Bin = function (_EventEmitter) {
     value: function getFile(file) {
       var _this3 = this;
 
-      file = /^\//.test(file) ? file : _path2.default.join(process.cwd(), file);
+      var formatted_file = /^\//.test(file) ? file : _path2.default.join(process.cwd(), file);
 
       return _promiseSequencer2.default.pipe(function () {
-        return _promiseSequencer2.default.promisify(_fsExtra2.default.stat, [file]);
+        return _promiseSequencer2.default.promisify(_fsExtra2.default.stat, [formatted_file]);
       }, function (stat) {
-        return new Promise(function (ok, ko) {
+        return new Promise(function (resolve, reject) {
           if (stat.isDirectory()) {
             _this3.scandir(file).then(function (files) {
-              _this3.getFiles.apply(_this3, _toConsumableArray(files)).then(ok, ko);
-            }).catch(ko);
+              _this3.getFiles.apply(_this3, _toConsumableArray(files)).then(resolve, reject);
+            }).catch(reject);
           } else {
-            ok(file);
+            resolve(file);
           }
         });
       });
@@ -113,16 +109,14 @@ var Bin = function (_EventEmitter) {
   }, {
     key: 'scandir',
     value: function scandir(dir) {
-      return new Promise(function (ok, ko) {
-
+      return new Promise(function (resolve, reject) {
         var files = [];
-
-        _fsExtra2.default.walk(dir).on('error', ko).on('data', function (file) {
+        _fsExtra2.default.walk(dir).on('error', reject).on('data', function (file) {
           if (file.path.replace(/\/$/, '') !== dir.replace(/\/$/, '')) {
             files.push(file.path);
           }
         }).on('end', function () {
-          return ok(files);
+          return resolve(files);
         });
       });
     }
@@ -134,7 +128,7 @@ var Bin = function (_EventEmitter) {
       var props = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
       var flags = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
 
-      return new Promise(function (ok, ko) {
+      return new Promise(function (resolve, reject) {
         try {
           var required = files.map(function (file) {
             if (flags.indexOf('fork') > -1) {
@@ -147,18 +141,18 @@ var Bin = function (_EventEmitter) {
               fn = fn.default;
             }
 
-            console.log({ fn: fn });
-
             if (typeof fn !== 'function') {
               var _ret = function () {
                 var serialization = typeof fn === 'undefined' ? 'undefined' : _typeof(fn);
 
                 try {
                   serialization += ' ' + JSON.stringify(fn);
-                } catch (error) {}
+                } catch (error) {
+                  console.warn('redtea> could not serialize');
+                }
 
                 return {
-                  v: function v(props) {
+                  v: function v() {
                     return (0, _2.default)('redtea imports file ' + file, function (it) {
                       it('File should export a function', function () {
                         throw new Error('Expected a function, got ' + serialization);
@@ -169,14 +163,13 @@ var Bin = function (_EventEmitter) {
               }();
 
               if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
-            } else {
-              return fn;
             }
+            return fn;
           });
 
-          ok(required);
+          resolve(required);
         } catch (error) {
-          ko(error);
+          reject(error);
         }
       });
     }
@@ -185,51 +178,47 @@ var Bin = function (_EventEmitter) {
     value: function fork(file) {
       var results = {};
 
-      return function (props) {
+      return function () {
+        var promise = (0, _promiseSequencer2.default)(function () {
+          return new Promise(function (resolve, reject) {
+            var child = _child_process2.default.fork(_path2.default.resolve(__dirname, '../bin/index.js'), [file]);
 
-        var p = new Promise(function (ok, ko) {
-          var child = _child_process2.default.fork(_path2.default.resolve(__dirname, '../bin/index.js'), [file]);
+            child.on('error', reject).on('exit', function () {
+              return resolve(results);
+            }).on('message', function (message) {
+              var parsed_message = JSON.parse(message);
 
-          child.on('error', ko).on('exit', function (status) {
-            return ok(results);
-          }).on('message', function (message) {
-
-            message = JSON.parse(message);
-
-            if ('redtea' in message) {
-              var _message = message;
-              var redtea = _message.redtea;
+              if ('redtea' in parsed_message) {
+                var redtea = parsed_message.redtea;
 
 
-              results = redtea;
-            }
+                results = redtea;
+              }
+            });
           });
         });
-
-        p.live = new _events.EventEmitter();
-
-        return p;
+        promise.live = new _events.EventEmitter();
+        return promise;
       };
     }
   }, {
     key: 'runFunctions',
     value: function runFunctions(fns) {
-      var props = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-      var flags = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
-
       var live = new _events.EventEmitter();
 
-      var promise = (0, _promiseSequencer2.default)(fns.map(function (fn) {
+      var eachFunction = function eachFunction(fn) {
         return function () {
-          return new Promise(function (ok, ko) {
+          return new Promise(function (resolve, reject) {
             var test = fn();
 
             test.live.on('error', live.emit.bind(live, 'error')).on('test', live.emit.bind(live, 'test')).on('passed', live.emit.bind(live, 'passed')).on('failed', live.emit.bind(live, 'failed'));
 
-            test.then(ok, ko);
+            test.then(resolve, reject);
           });
         };
-      }));
+      };
+
+      var promise = (0, _promiseSequencer2.default)(fns.map(eachFunction));
 
       promise.live = live;
 

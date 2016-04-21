@@ -15,7 +15,7 @@ function describe(label, story) {
   var promise = test.run();
   promise.live = test;
   return promise;
-}
+} //  weak
 
 describe.use = function (fn) {
   return function (it) {
