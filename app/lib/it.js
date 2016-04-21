@@ -20,7 +20,7 @@ export default class It extends EventEmitter {
   id: number;
   error: ?Error;
 
-  constructor (label: string, story: Function, parents: Array<It>) {
+  constructor (label: string, story: Function, parents: ?Array<It>) {
     super();
 
     this.parents = parents || [];
