@@ -134,8 +134,15 @@ var Bin = function (_EventEmitter) {
             if (flags.indexOf('fork') > -1) {
               return _this4.fork(file);
             }
+            var absoluteFile = void 0;
 
-            var fn = require(file);
+            if (/^\//.test(file)) {
+              absoluteFile = file;
+            } else {
+              absoluteFile = _path2.default.join(process.cwd(), file);
+            }
+
+            var fn = require(absoluteFile);
 
             if (typeof fn.default === 'function') {
               fn = fn.default;

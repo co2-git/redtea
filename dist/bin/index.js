@@ -55,9 +55,9 @@ process.title = 'redtea';
 process.on('exit', function () {
   if (!done) {
     var margin = pad(' ', 16);
-    console.log('  ', _safe2.default.bgRed(pad(' ', 44)));
+    console.log('  ', _safe2.default.bgRed(pad(' ', 52)));
     console.log('  ', _safe2.default.bgRed.bold(margin + 'TEST FAILED   (EXIT)' + margin));
-    console.log('  ', _safe2.default.bgRed(pad));
+    console.log('  ', _safe2.default.bgRed(pad(' ', 52)));
   }
 });
 
@@ -204,7 +204,7 @@ process.argv.filter(function (arg, index) {
 
     if (failed.length) {
       console.log('  ', _safe2.default.bgRed(pad(' ', 44)));
-      console.log('  ', _safe2.default.bgRed.bold(pad(' ', 16) + 'TEST FAILED   (x' + failed.length + ')' + pad(' ', 16)));
+      console.log('  ', _safe2.default.bgRed.bold(pad(' ', 16) + 'TEST FAILED   (x' + failed.length + ')' + pad(' ', 20)));
       console.log('  ', _safe2.default.bgRed(pad(' ', 44)));
       console.log();
 
@@ -225,9 +225,9 @@ process.argv.filter(function (arg, index) {
         console.log();
       });
     } else {
-      console.log('  ', _safe2.default.bgGreen(pad(' ', 44)));
+      console.log('  ', _safe2.default.bgGreen(pad(' ', 48)));
       console.log('  ', _safe2.default.bgGreen.bold(pad(' ', 16) + 'ALL TESTS PASSED' + pad(' ', 16)));
-      console.log('  ', _safe2.default.bgGreen(pad(' ', 44)));
+      console.log('  ', _safe2.default.bgGreen(pad(' ', 48)));
     }
 
     if (typeof process.send === 'function') {

@@ -89,8 +89,15 @@ class Bin extends EventEmitter {
           if (flags.indexOf('fork') > -1) {
             return this.fork(file);
           }
+          let absoluteFile;
 
-          let fn = require(file);
+          if (/^\//.test(file)) {
+            absoluteFile = file;
+          } else {
+            absoluteFile = path.join(process.cwd(), file);
+          }
+
+          let fn = require(absoluteFile);
 
           if (typeof fn.default === 'function') {
             fn = fn.default;

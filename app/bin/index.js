@@ -47,11 +47,11 @@ process.title = 'redtea';
 process.on('exit', () => {
   if (!done) {
     const margin = pad(' ', 16);
-    console.log('  ', colors.bgRed(pad(' ', 44)));
+    console.log('  ', colors.bgRed(pad(' ', 52)));
     console.log('  ', colors.bgRed.bold(
       `${margin}TEST FAILED   (EXIT)${margin}`)
     );
-    console.log('  ', colors.bgRed(pad));
+    console.log('  ', colors.bgRed(pad(' ', 52)));
   }
 });
 
@@ -195,7 +195,7 @@ sequencer(
       if (failed.length) {
         console.log('  ', colors.bgRed(pad(' ', 44)));
         console.log('  ', colors.bgRed.bold(
-          `${pad(' ', 16)}TEST FAILED   (x${failed.length})${pad(' ', 16)}`
+          `${pad(' ', 16)}TEST FAILED   (x${failed.length})${pad(' ', 20)}`
         ));
         console.log('  ', colors.bgRed(pad(' ', 44)));
         console.log();
@@ -225,11 +225,11 @@ sequencer(
           console.log();
         });
       } else {
-        console.log('  ', colors.bgGreen(pad(' ', 44)));
+        console.log('  ', colors.bgGreen(pad(' ', 48)));
         console.log('  ', colors.bgGreen.bold(
           `${pad(' ', 16)}ALL TESTS PASSED${pad(' ', 16)}`
         ));
-        console.log('  ', colors.bgGreen(pad(' ', 44)));
+        console.log('  ', colors.bgGreen(pad(' ', 48)));
       }
 
       if (typeof process.send === 'function') {
