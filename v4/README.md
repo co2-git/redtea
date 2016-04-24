@@ -18,9 +18,23 @@ Extensive test framework in JavaScript. Different levels of testing offered:
 import {indeed} from 'redtea';
 const foo = 2/2;
 
-if (indeed(foo).is(1)) {
-  console.log('Yeah!');
+if (indeed(foo).is.a(Number) && indeed(foo).is(1)) {
+  console.log('√ passed');
 }
 ```
 
 Read more about [indeed](doc/Indeed.md).
+
+# Is
+
+`is` the core library of `redtea`. It uses [should.js](https://shouldjs.github.io/) as an assertion engine (*this is subject to change*).
+You'll note that `assuming` is basically just a sugar for `is`.
+
+```javascript
+import {is} from 'redtea';
+const foo = 1;
+is(foo, 1);
+is(foo, 2); // throws assertion error
+is.type(foo, Number);
+is.type(foo, String); // throws assertion error
+```
