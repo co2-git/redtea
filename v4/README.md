@@ -47,6 +47,8 @@ Read more about [assuming](doc/Assuming.md).
 It uses a TDD syntax and returns a promise so you can stack it.
 
 ```javascript
+import {describe, it} from 'redtea';
+
 describe(true, it.is.a(Boolean), it.is(true)).then().catch();
 ```
 
