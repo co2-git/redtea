@@ -81,6 +81,30 @@ describe(emitter.emit('foo', 5),
 );
 ```
 
+# CLI
+
+We ship with a cli.
+
+```javascript
+// test.js
+import {describe, it} from 'redtea';
+
+export default () => describe.batch('My tests',
+  () => describe(true, it.is(true)),
+  () => describe(false, it.is.not(true), it.is(false)),
+  () => describe.batch('Nested test',
+    () => describe(22, it.is.a(Number))
+  )
+);
+
+```
+
+From your terminal:
+
+```bash
+redtea test.js
+```
+
 # Is
 
 `is` the core library of `redtea`. It performs basic synchronous value/type comparison and throws assertion errors on failure. `assuming` is basically a sugar for `is`.
