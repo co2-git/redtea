@@ -43,12 +43,13 @@ Read more about [assuming](doc/Assuming.md).
 
 # Describe
 
-`describe` lets you run an assertion inside a Promise. It is powerful and you can assert asynchronous code.
+`describe` lets you run an assertion inside a Promise.
+It uses a TDD syntax and throw on error.
 
 ```javascript
-describe(true, it.is.a(Boolean), it.is(true))
-  .then(() => console.log('OK!'))
-  .catch(error => console.log(error));
+try {
+  describe(true, it.is.a(Boolean), it.is(true));
+} catch (error) {}
 ```
 
 ## Promises
@@ -58,7 +59,7 @@ You can easily asserts what is returned by promises.
 ```javascript
 const myPromise = new Promise((resolve) => resolve(42));
 
-describe(myPromise, it.is(42));
+describe.async(myPromise, it.is(42));
 ```
 
 You can also assert rejections.
@@ -66,15 +67,15 @@ You can also assert rejections.
 ```javascript
 const myPromise = new Promise((resolve, reject) => reject(new Error('...')));
 
-describe(myPromise, it.is.an(Error));
+describe.async(myPromise, it.is.an(Error));
 ```
 
 ## Events
 
-You can also assert events:
+You can also assert events. It will listen to events.
 
 ```javascript
-describe(emitter.emit('foo', 5),
+describe.emitter(emitter.emit('foo', 5),
   it.emits('foo', (msg) => describe(msg, it.is(5))),
   it.does.not.emit('error')
 );
