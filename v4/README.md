@@ -25,6 +25,22 @@ if (indeed(foo).is.a(Number) && indeed(foo).is(1)) {
 
 Read more about [indeed](doc/Indeed.md).
 
+# Assuming
+
+`assuming` lets you test the assert way: an assertion error is thrown if assertion fails.
+
+```javascript
+import {assuming} from 'redtea';
+const foo = 2/2;
+
+try {
+  assuming(foo).is.a(Number);
+  assuming(foo).is(1);
+} catch (error) {}
+```
+
+Read more about [assuming](doc/Assuming.md).
+
 # Is
 
 `is` the core library of `redtea`. It uses [should.js](https://shouldjs.github.io/) as an assertion engine (*this is subject to change*).
