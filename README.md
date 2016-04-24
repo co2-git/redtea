@@ -1,6 +1,8 @@
 redtea
 ===
 
+**NEW** Checkout redtea's [version 4](https://github.com/co2-git/redtea/tree/v4)!
+
 A test framework for Node based on re-usability.
 
 # Install
