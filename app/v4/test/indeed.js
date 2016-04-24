@@ -2,10 +2,14 @@
 import colors from 'colors/safe';
 import _ from 'lodash';
 import is from '../lib/is';
+import indeed from '../lib/indeed';
 
 function test(label: string, story: Function): void {
   try {
-    story();
+    const bool = story();
+    if (!bool) {
+      throw new Error('Assertion fails');
+    }
     console.log(colors.green(`  √ ${label}`));
   } catch (error) {
     console.log(colors.red(`  × ${label}`));
@@ -14,28 +18,28 @@ function test(label: string, story: Function): void {
   }
 }
 
-console.log(colors.bold.underline.italic('is'));
+console.log(colors.bold.underline.italic('indeed'));
 
 console.log();
 console.log('null');
 console.log();
 
-test('null is null', () => is(null, null));
-test('null is not undefined', () => is.not(null, undefined));
-test('null is not 1', () => is.not(null, 1));
-test('null is not "abc"', () => is.not(null, 'abc'));
-test('null is not false', () => is.not(null, false));
-test('null is not {}', () => is.not(null, {}));
-test('null is not []', () => is.not(null, []));
-test('null is not a Number', () => is.not.type(null, Number));
-test('null is not a String', () => is.not.type(null, String));
-test('null is not a Boolean', () => is.not.type(null, Boolean));
-test('null is not an Object', () => is.not.type(null, Object));
-test('null is not an Array', () => is.not.type(null, Array));
-test('null is not a Function', () => is.not.type(null, Function));
-test('null is not an Error', () => is.not.type(null, Error));
-test('null is not a Date', () => is.not.type(null, Date));
-test('null is not a RegExp', () => is.not.type(null, RegExp));
+test('null is null', () => indeed(null).is(null));
+test('null is not undefined', () => indeed(null).is.not(undefined));
+test('null is not 1', () => indeed(null).is.not(1));
+test('null is not "abc"', () => indeed(null).is.not('abc'));
+test('null is not false', () => indeed(null).is.not(false));
+test('null is not {}', () => indeed(null).is.not({}));
+test('null is not []', () => indeed(null).is.not([]));
+test('null is not a Number', () => indeed(null).is.not.a(Number));
+test('null is not a String', () => indeed(null).is.not.a(String));
+test('null is not a Boolean', () => indeed(null).is.not.a(Boolean));
+test('null is not an Object', () => indeed(null).is.not.an(Object));
+test('null is not an Array', () => indeed(null).is.not.an(Array));
+test('null is not a Function', () => indeed(null).is.not.a(Function));
+test('null is not an Error', () => indeed(null).is.not.an(Error));
+test('null is not a Date', () => indeed(null).is.not.a(Date));
+test('null is not a RegExp', () => indeed(null).is.not.a(RegExp));
 
 console.log();
 console.log('undefined');

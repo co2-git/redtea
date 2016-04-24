@@ -12,11 +12,18 @@ var _is = require('../lib/is');
 
 var _is2 = _interopRequireDefault(_is);
 
+var _indeed = require('../lib/indeed');
+
+var _indeed2 = _interopRequireDefault(_indeed);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function test(label, story) {
   try {
-    story();
+    var bool = story();
+    if (!bool) {
+      throw new Error('Assertion fails');
+    }
     console.log(_safe2.default.green('  √ ' + label));
   } catch (error) {
     console.log(_safe2.default.red('  × ' + label));
@@ -25,59 +32,59 @@ function test(label, story) {
   }
 }
 
-console.log(_safe2.default.bold.underline.italic('is'));
+console.log(_safe2.default.bold.underline.italic('indeed'));
 
 console.log();
 console.log('null');
 console.log();
 
 test('null is null', function () {
-  return (0, _is2.default)(null, null);
+  return (0, _indeed2.default)(null).is(null);
 });
 test('null is not undefined', function () {
-  return _is2.default.not(null, undefined);
+  return (0, _indeed2.default)(null).is.not(undefined);
 });
 test('null is not 1', function () {
-  return _is2.default.not(null, 1);
+  return (0, _indeed2.default)(null).is.not(1);
 });
 test('null is not "abc"', function () {
-  return _is2.default.not(null, 'abc');
+  return (0, _indeed2.default)(null).is.not('abc');
 });
 test('null is not false', function () {
-  return _is2.default.not(null, false);
+  return (0, _indeed2.default)(null).is.not(false);
 });
 test('null is not {}', function () {
-  return _is2.default.not(null, {});
+  return (0, _indeed2.default)(null).is.not({});
 });
 test('null is not []', function () {
-  return _is2.default.not(null, []);
+  return (0, _indeed2.default)(null).is.not([]);
 });
 test('null is not a Number', function () {
-  return _is2.default.not.type(null, Number);
+  return (0, _indeed2.default)(null).is.not.a(Number);
 });
 test('null is not a String', function () {
-  return _is2.default.not.type(null, String);
+  return (0, _indeed2.default)(null).is.not.a(String);
 });
 test('null is not a Boolean', function () {
-  return _is2.default.not.type(null, Boolean);
+  return (0, _indeed2.default)(null).is.not.a(Boolean);
 });
 test('null is not an Object', function () {
-  return _is2.default.not.type(null, Object);
+  return (0, _indeed2.default)(null).is.not.an(Object);
 });
 test('null is not an Array', function () {
-  return _is2.default.not.type(null, Array);
+  return (0, _indeed2.default)(null).is.not.an(Array);
 });
 test('null is not a Function', function () {
-  return _is2.default.not.type(null, Function);
+  return (0, _indeed2.default)(null).is.not.a(Function);
 });
 test('null is not an Error', function () {
-  return _is2.default.not.type(null, Error);
+  return (0, _indeed2.default)(null).is.not.an(Error);
 });
 test('null is not a Date', function () {
-  return _is2.default.not.type(null, Date);
+  return (0, _indeed2.default)(null).is.not.a(Date);
 });
 test('null is not a RegExp', function () {
-  return _is2.default.not.type(null, RegExp);
+  return (0, _indeed2.default)(null).is.not.a(RegExp);
 });
 
 console.log();

@@ -41,10 +41,48 @@ try {
 
 Read more about [assuming](doc/Assuming.md).
 
+# Describe
+
+`describe` lets you run an assertion inside a Promise. It is powerful and you can assert asynchronous code.
+
+```javascript
+describe(true, it.is.a(Boolean), it.is(true))
+  .then(() => console.log('OK!'))
+  .catch(error => console.log(error));
+```
+
+## Promises
+
+You can easily asserts what is returned by promises.
+
+```javascript
+const myPromise = new Promise((resolve) => resolve(42));
+
+describe(myPromise, it.is(42));
+```
+
+You can also assert rejections.
+
+```javascript
+const myPromise = new Promise((resolve, reject) => reject(new Error('...')));
+
+describe(myPromise, it.is.an(Error));
+```
+
+## Events
+
+You can also assert events:
+
+```javascript
+describe(emitter.emit('foo', 5),
+  it.emits('foo', (msg) => describe(msg, it.is(5))),
+  it.does.not.emit('error')
+);
+```
+
 # Is
 
-`is` the core library of `redtea`. It uses [should.js](https://shouldjs.github.io/) as an assertion engine (*this is subject to change*).
-You'll note that `assuming` is basically just a sugar for `is`.
+`is` the core library of `redtea`. It performs basic synchronous value/type comparison and throws assertion errors on failure. `assuming` is basically a sugar for `is`.
 
 ```javascript
 import {is} from 'redtea';
