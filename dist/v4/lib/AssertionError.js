@@ -38,6 +38,7 @@ var AssertionError = function (_ExtendableError) {
     _this2.subject = subject;
     _this2.value = value;
     _this2.type = type;
+    _this2.name = AssertionError.name;
     return _this2;
   }
 

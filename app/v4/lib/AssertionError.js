@@ -13,6 +13,7 @@ export default class AssertionError extends ExtendableError {
     this.subject = subject;
     this.value = value;
     this.type = type;
+    this.name = AssertionError.name;
   }
 
 }

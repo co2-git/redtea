@@ -114,13 +114,17 @@ redtea test.js
 
 # Is
 
-`is` the core library of `redtea`. It performs basic synchronous value/type comparison and throws assertion errors on failure. `assuming` is basically a sugar for `is`.
+`is` the core library of `redtea`. It performs basic synchronous value/type comparison and returns an object. `assuming` is basically a sugar for `is`.
 
 ```javascript
 import {is} from 'redtea';
 const foo = 1;
 is(foo, 1);
-is(foo, 2); // throws assertion error
+{label: "number 1 is number 1", subject: foo, value: 1, passed: true}
+is(foo, 2);
+{label: "number 1 is number 1", subject: foo, value: 1, passed: false}
 is.type(foo, Number);
-is.type(foo, String); // throws assertion error
+{label: "number 1 is number 1", subject: foo, type: Number, passed: true}
+is.type(foo, String);
+{label: "number 1 is number 1", subject: foo, type: String, passed: false}
 ```
