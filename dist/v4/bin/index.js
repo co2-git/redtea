@@ -31,12 +31,18 @@ var tests = 0;
 var passed = 0;
 var failed = 0;
 
+function pad(character, times) {
+  return _lodash2.default.range(times).map(function () {
+    return character;
+  }).join('');
+}
+
 function readResult(result) {
   var tab = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
 
-  // console.log(require('util').inspect(result, { depth: null }));
   console.log(tab, _colors2.default.cyan.bold(result.label));
   result.results.forEach(function (result2) {
+    // console.log(require('util').inspect(result2, { depth: null }));
     if ('subject' in result2) {
       console.log(tab, '  ', _colors2.default.bold((0, _format2.default)(result2.subject)));
       result2.results.forEach(function (result3) {
@@ -77,8 +83,21 @@ var testResults = [];
   //
   // });
 }).then(function () {
+  // console.log(require('util').inspect(testResults, { depth: null }));
   testResults.forEach(function (result) {
     return readResult(result);
   });
+
+  console.log();
   console.log({ tests: tests, passed: passed });
+  console.log();
+
+  if (tests === passed) {
+    console.log('  ', _colors2.default.bgGreen(pad(' ', 52)));
+    console.log('  ', _colors2.default.white.bgGreen.bold(pad(' ', 17), 'ALL TESTS PASSED', pad(' ', 17)));
+    console.log('  ', _colors2.default.bgGreen(pad(' ', 52)));
+  } else {
+    console.log(_colors2.default.bgRed(pad(' ', 52)));
+    console.log(_colors2.default.bgRed(pad(' ', 52)));
+  }
 });

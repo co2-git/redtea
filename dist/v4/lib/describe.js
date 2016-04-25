@@ -57,22 +57,21 @@ function emits(message) {
   };
 }
 
+function doesNotEmit(event) {
+  return function () {
+    return {
+      event: event,
+      not: true
+    };
+  };
+}
+
 var it = exports.it = {
   is: itIs,
   emits: emits,
   does: {
     not: {
-      emit: function emit(event) {
-        return function () {
-          return {
-            event: event,
-            checkers: [new Promise(function (resolve, reject) {
-              return reject(new Error('Emitter was not supposed to emit ' + event));
-            })],
-            not: true
-          };
-        };
-      }
+      emit: doesNotEmit
     }
   }
 };
@@ -85,9 +84,81 @@ it.is.not = itIsNot;
 it.is.not[aa] = itIsNotA;
 it.is.not.an = itIsNotA;
 
+function handleEmitter(emitter) {
+  for (var _len2 = arguments.length, listeners = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+    listeners[_key2 - 1] = arguments[_key2];
+  }
+
+  var handlers = listeners.map(function (listener) {
+    return listener();
+  });
+  return new Promise(function (resolve) {
+    var expectedEvents = listeners
+    // .filter(listener => !listener().not)
+    .length;
+    var receivedEvents = 0;
+    var results = [];
+    handlers.forEach(function (listener) {
+      var event = listener.event;
+      var checkers = listener.checkers;
+      var not = listener.not;
+
+      if (not) {
+        (function () {
+          var timeout = setTimeout(function () {
+            receivedEvents++;
+            results.push({
+              label: 'emitter is not emitting "' + event + '"',
+              passed: true,
+              subject: emitter,
+              event: event
+            });
+            if (receivedEvents === expectedEvents) {
+              resolve({ subject: emitter, results: results });
+            }
+          }, 2500);
+          emitter.once(event, function () {
+            clearTimeout(timeout);
+            results.push({
+              label: 'emitter is not emitting "' + event + '"',
+              passed: false,
+              subject: emitter,
+              event: event
+            });
+            if (receivedEvents === expectedEvents) {
+              resolve({ subject: emitter, results: results });
+            }
+          });
+        })();
+      } else {
+        emitter.once(event, function () {
+          for (var _len3 = arguments.length, messages = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+            messages[_key3] = arguments[_key3];
+          }
+
+          receivedEvents++;
+          results.push({
+            label: 'emitter is emitting "' + event + '"',
+            passed: true,
+            subject: emitter,
+            event: event
+          });
+          var eventResults = checkers.map(function (checker) {
+            return checker.apply(undefined, messages);
+          });
+          results.push.apply(results, _toConsumableArray(eventResults));
+          if (receivedEvents === expectedEvents) {
+            resolve({ subject: emitter, results: results });
+          }
+        });
+      }
+    });
+  });
+}
+
 function describe(subject) {
-  for (var _len2 = arguments.length, describers = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-    describers[_key2 - 1] = arguments[_key2];
+  for (var _len4 = arguments.length, describers = Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
+    describers[_key4 - 1] = arguments[_key4];
   }
 
   return new Promise(function (resolve, reject) {
@@ -100,94 +171,16 @@ function describe(subject) {
     if (subject instanceof Promise) {
       subject.then(run, run);
     } else if (subject instanceof _events.EventEmitter) {
-      (function () {
-        var emitted = 0;
-        var triggers = describers.map(function (describer) {
-          return describer();
-        });
-        var listeners = triggers.filter(function (trigger) {
-          return !trigger.not;
-        }).length;
-        var events = [];
-        triggers.forEach(function (trigger) {
-          return subject.on(trigger.event, function () {
-            for (var _len3 = arguments.length, messages = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-              messages[_key3] = arguments[_key3];
-            }
-
-            if (!trigger.not) {
-              emitted++;
-              (0, _promiseSequencer2.default)(trigger.checkers.map(function (checker) {
-                return function () {
-                  return checker.apply(undefined, messages);
-                };
-              })).then(function (results) {
-                events.push({ subject: subject, event: trigger.event, results: results });
-                if (emitted === listeners) {
-                  if (listeners !== triggers.length) {
-                    var notTriggered = triggers.filter(function (trigger) {
-                      return trigger.not;
-                    }).map(function (trigger) {
-                      return { subject: subject, event: trigger.event, results: [{
-                          label: 'does not emit'
-                        }] };
-                    });
-                    events.push.apply(events, _toConsumableArray(notTriggered));
-                  }
-                  resolve(events);
-                }
-              }).catch(reject);
-            } else {
-              reject(new Error('Unexpected event ' + trigger.event));
-            }
-          });
-        });
-      })();
+      handleEmitter.apply(undefined, [subject].concat(describers)).then(resolve, reject);
     } else {
       run(subject);
     }
   });
 }
 
-// describe(1, it.is(1), it.is.a(Number))
-//   .then(results => console.log(require('util').inspect(results, { depth: null })))
-//   .catch(error => console.log({error}));
-
-// describe(new Promise((resolve) => resolve(22)), it.is.a(Number))
-//   .then(results => console.log(require('util').inspect(results, { depth: null })))
-//   .catch(error => console.log({error}));
-//
-// describe(new Promise((resolve, reject) => reject(new Error('!'))), it.is.an(Error))
-//   .then(results => console.log(require('util').inspect(results, { depth: null })))
-//   .catch(error => console.log({error}));
-
-// const emitter = new EventEmitter();
-//
-// setTimeout(() => emitter
-//   .emit('hello')
-// , 1000);
-//
-// setTimeout(() => emitter
-//   .emit('foo', 1)
-// , 2000);
-
-// describe(emitter,
-//     it.emits('hello'),
-//     it.emits('foo',
-//       (num) => describe(num, it.is.a(Number))
-//     ),
-//     it.does.not.emit('error')
-//   )
-//   .then(results => console.log(require('util').inspect(results, { depth: null })))
-//   .catch(error => console.log({error}));
-
-// describe(emitter, it.does.not.emit('foo'))
-//   .then(results => console.log(require('util').inspect(results, { depth: null })))
-//   .catch(error => console.log({error}));;
-
 function batch(label) {
-  for (var _len4 = arguments.length, describers = Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
-    describers[_key4 - 1] = arguments[_key4];
+  for (var _len5 = arguments.length, describers = Array(_len5 > 1 ? _len5 - 1 : 0), _key5 = 1; _key5 < _len5; _key5++) {
+    describers[_key5 - 1] = arguments[_key5];
   }
 
   return new Promise(function (resolve, reject) {
@@ -198,13 +191,3 @@ function batch(label) {
 }
 
 describe.batch = batch;
-
-// describe
-//   .batch('hello',
-//     () => describe(1, it.is(1), it.is.a(Number)),
-//     () => describe.batch('foo',
-//       () => describe(1, it.is(1), it.is.a(Number)),
-//     )
-//   )
-//   .then((results) => console.log(require('util').inspect(results, { depth: null })))
-//   .catch(error => console.log(error.stack));

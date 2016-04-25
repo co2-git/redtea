@@ -68,7 +68,8 @@ is.type = function (subject, type) {
   if (typeof type !== 'function') {
     throw new Error('Type must be a function');
   }
-  var label = (0, _format2.default)(subject) + ' is ' + (not ? 'not ' : '') + 'a ' + type.name;
+  var article = /^(a|e|i|o|u)/i.test(type.name) ? 'an' : 'a';
+  var label = (0, _format2.default)(subject) + ' is ' + (not ? 'not ' : '') + article + ' ' + type.name;
   var passed = void 0;
   switch (type) {
     case String:

@@ -8,7 +8,16 @@ import _ from 'lodash';
 import AssertionError from './AssertionError';
 import format from './format';
 
-const is = (subject: any, value: any, not : boolean = false): Object => {
+export type $is = {
+  label: string,
+  passed: boolean,
+  subject: any,
+  value?: any,
+  type?: Function,
+  event?: string,
+};
+
+const is = (subject: any, value: any, not : boolean = false): $is => {
   const label = `${format(subject)} is ${not ? 'not ' : ''}${format(value)}`;
   let passed;
   switch (value) {
@@ -47,7 +56,9 @@ is.type = (subject: any, type: Function, not : boolean = false): Object => {
   if (typeof type !== 'function') {
     throw new Error('Type must be a function');
   }
-  const label = `${format(subject)} is ${not ? 'not ' : ''}a ${type.name}`;
+  const article = /^(a|e|i|o|u)/i.test(type.name) ? 'an' : 'a';
+  const label =
+    `${format(subject)} is ${not ? 'not ' : ''}${article} ${type.name}`;
   let passed;
   switch (type) {
   case String:

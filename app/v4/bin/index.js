@@ -1,5 +1,7 @@
 #!/usr/bin/bash
 
+// @flow
+
 import path from 'path';
 import colors from 'colors';
 import _ from 'lodash';
@@ -10,10 +12,14 @@ let tests = 0;
 let passed = 0;
 let failed = 0;
 
+function pad(character: string, times: number): string {
+  return _.range(times).map(() => character).join('');
+}
+
 function readResult(result: Object, tab: string = ''): void {
-  // console.log(require('util').inspect(result, { depth: null }));
   console.log(tab, colors.cyan.bold(result.label));
   result.results.forEach(result2 => {
+    // console.log(require('util').inspect(result2, { depth: null }));
     if (('subject' in result2)) {
       console.log(tab, '  ', colors.bold(format(result2.subject)));
       result2.results.forEach(result3 => {
@@ -59,6 +65,23 @@ sequencer(test)
     // });
   })
   .then(() => {
+    // console.log(require('util').inspect(testResults, { depth: null }));
     testResults.forEach(result => readResult(result));
+
+    console.log();
     console.log({tests, passed});
+    console.log();
+
+    if (tests === passed) {
+      console.log('  ', colors.bgGreen(pad(' ', 52)));
+      console.log('  ', (colors.white.bgGreen.bold(
+        pad(' ', 17),
+        'ALL TESTS PASSED',
+        pad(' ', 17),
+      )));
+      console.log('  ', colors.bgGreen(pad(' ', 52)));
+    } else {
+      console.log(colors.bgRed(pad(' ', 52)));
+      console.log(colors.bgRed(pad(' ', 52)));
+    }
   });
