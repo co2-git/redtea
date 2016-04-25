@@ -45,7 +45,22 @@ function emits(message) {
 
 var it = exports.it = {
   is: itIs,
-  emits: emits
+  emits: emits,
+  does: {
+    not: {
+      emit: function emit(event) {
+        return function () {
+          return {
+            event: event,
+            checkers: [new Promise(function (resolve, reject) {
+              return reject(new Error('Emitter was not supposed to emit ' + event));
+            })],
+            not: true
+          };
+        };
+      }
+    }
+  }
 };
 
 var aa = 'a';
@@ -77,19 +92,24 @@ function describe(subject) {
         var triggers = describers.map(function (describer) {
           return describer();
         });
+        var listeners = triggers.filter(function (trigger) {
+          return !trigger.not;
+        }).length;
         triggers.forEach(function (trigger) {
           return subject.on(trigger.event, function () {
             for (var _len3 = arguments.length, messages = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
               messages[_key3] = arguments[_key3];
             }
 
-            emitted++;
+            if (!trigger.not) {
+              emitted++;
+            }
             (0, _promiseSequencer2.default)(trigger.checkers.map(function (checker) {
               return function () {
                 return checker.apply(undefined, messages);
               };
             })).then(function () {
-              if (emitted === triggers.length) {
+              if (emitted === listeners) {
                 resolve();
               }
             }).catch(reject);
@@ -126,7 +146,7 @@ setTimeout(function () {
 
 describe(emitter, it.emits('hello'), it.emits('foo', function (num) {
   return describe(num, it.is.a(Number));
-})).then(function (results) {
+}), it.does.not.emit('error')).then(function (results) {
   return console.log({ results: results });
 }).catch(function (error) {
   return console.log({ error: error });

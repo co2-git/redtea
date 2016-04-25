@@ -81,8 +81,8 @@ process.nextTick(() => emitter.emits('foo', 1, 2));
 
 describe(emitter,
   it.emits('foo',
-    (msg) => describe(msg, it.is(1)),
-    (,msg) => describe(msg, it.is(2)),
+    (num1) => describe(num1, it.is(1)),
+    (num1, num2) => describe(num2, it.is(2)),
   ),
   it.does.not.emit('error')
 );

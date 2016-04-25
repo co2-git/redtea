@@ -25,6 +25,19 @@ function emits(message: string, ...checkers: Array<Function>): Function {
 export const it = {
   is: itIs,
   emits,
+  does: {
+    not: {
+      emit: (event: string): Function => () => ({
+        event,
+        checkers: [
+          new Promise((resolve, reject) => reject(
+            new Error('Emitter was not supposed to emit ' + event))
+          )
+        ],
+        not: true,
+      }),
+    }
+  },
 };
 
 const aa = 'a';
@@ -52,11 +65,14 @@ export function describe(
     } else if (subject instanceof EventEmitter) {
       let emitted = 0;
       const triggers = describers.map(describer => describer());
+      const listeners = triggers.filter(trigger => !trigger.not).length;
       triggers.forEach(trigger => subject.on(trigger.event, (...messages) => {
-        emitted++;
+        if (!trigger.not) {
+          emitted++;
+        }
         sequencer(trigger.checkers.map(checker => () => checker(...messages)))
           .then(() => {
-            if (emitted === triggers.length) {
+            if (emitted === listeners) {
               resolve();
             }
           })
@@ -94,7 +110,8 @@ describe(emitter,
     it.emits('hello'),
     it.emits('foo',
       (num) => describe(num, it.is.a(Number))
-    )
+    ),
+    it.does.not.emit('error')
   )
   .then(results => console.log({results}))
   .catch(error => console.log({error}));
