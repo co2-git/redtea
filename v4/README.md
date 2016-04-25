@@ -124,7 +124,7 @@ is(foo, 1);
 is(foo, 2);
 {label: "number 1 is number 1", subject: foo, value: 1, passed: false}
 is.type(foo, Number);
-{label: "number 1 is number 1", subject: foo, type: Number, passed: true}
+{label: "number 1 is a Number", subject: foo, type: Number, passed: true}
 is.type(foo, String);
-{label: "number 1 is number 1", subject: foo, type: String, passed: false}
+{label: "number 1 is a Number", subject: foo, type: String, passed: false}
 ```
