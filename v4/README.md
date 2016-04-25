@@ -75,8 +75,15 @@ describe(myPromise, it.is.an(Error));
 You can also assert events. It will listen to events.
 
 ```javascript
-describe(emitter.emit('foo', 5),
-  it.emits('foo', (msg) => describe(msg, it.is(5))),
+const emitter = new EventEmitter();
+
+process.nextTick(() => emitter.emits('foo', 1, 2));
+
+describe(emitter,
+  it.emits('foo',
+    (msg) => describe(msg, it.is(1)),
+    (,msg) => describe(msg, it.is(2)),
+  ),
   it.does.not.emit('error')
 );
 ```
