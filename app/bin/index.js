@@ -1,16 +1,15 @@
 #!/usr/bin/bash
 // @flow
 
-import path from 'path';
 import colors from 'colors';
 import _ from 'lodash';
 import sequencer from 'promise-sequencer';
 import format from '../lib/format';
 import fetch from '../lib/fetch';
-import {describe} from '../lib/describe';
-import packageJSON from '../../../package.json';
+import packageJSON from '../../package.json';
+import {Is} from '../lib/is';
 
-function overthrow(error) {
+function overthrow(error: Error) {
   console.log(colors.yellow(error.stack));
   process.exit(8);
 }
@@ -41,16 +40,16 @@ let done = 0;
 let skipped = 0;
 let tab = '';
 
-function runAll(...functions) {
+function runAll(...functions: Array<Function>) {
   let cursor = 0;
   function runOne() {
     if (functions[cursor]) {
       functions[cursor]()
-        .on('batch', label => {
+        .on('batch', (label: string) => {
           console.log(tab, colors.bgBlue(label));
           tab += '  ';
         })
-        .on('describe', (subject, options) => {
+        .on('describe', (subject: string, options: Array<Object>) => {
           let label;
           const as = _.find(options, 'as');
           if (as) {
@@ -60,24 +59,24 @@ function runAll(...functions) {
           }
           console.log(tab, label);
         })
-        .on('passed', (passedResults) => {
+        .on('passed', (passedResult: Is) => {
           tests++;
           passed++;
           console.log(
             tab,
             '  ',
             colors.green.bold('√'),
-            colors.grey('is' + passedResults.label.split('is')[1])
+            colors.grey('is' + passedResult.label.split('is')[1])
           );
         })
-        .on('failed', (failedResults) => {
+        .on('failed', (failedResult: Is) => {
           tests++;
           failed++;
           console.log(
             tab,
             '  ',
             colors.red.bold('×'),
-            colors.red('is' + failedResults.label.split('is')[1])
+            colors.red('is' + failedResult.label.split('is')[1])
           );
         })
         .on('_done', () => {
@@ -115,7 +114,7 @@ function runAll(...functions) {
 }
 
 function pad(character: string, times: number): string {
-  return _.range(times).map(() => character).join('');
+  return _.range(times).map((): string => character).join('');
 }
 
 const props = {};
@@ -137,15 +136,15 @@ process.argv
   });
 
 sequencer(
-  () => fetch.getFiles(...files),
-  _files => fetch.getFunctions(_files, props, flags)
-).then((results) => {
+  (): Promise => fetch.getFiles(...files),
+  (_files: Array<string>): Promise => fetch.getFunctions(_files, props, flags)
+).then((results: Array<any>) => {
   try {
     const [, functions] = results;
     runAll(...functions);
   } catch (error) {
     overthrow(error);
   }
-}).catch(error => {
+}).catch((error: Error) => {
   overthrow(error);
 });

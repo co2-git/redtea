@@ -3,10 +3,6 @@
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-var _path = require('path');
-
-var _path2 = _interopRequireDefault(_path);
-
 var _colors = require('colors');
 
 var _colors2 = _interopRequireDefault(_colors);
@@ -27,11 +23,11 @@ var _fetch = require('../lib/fetch');
 
 var _fetch2 = _interopRequireDefault(_fetch);
 
-var _describe = require('../lib/describe');
-
-var _package = require('../../../package.json');
+var _package = require('../../package.json');
 
 var _package2 = _interopRequireDefault(_package);
+
+var _is = require('../lib/is');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -86,14 +82,14 @@ function runAll() {
           label = (0, _format2.default)(subject);
         }
         console.log(tab, label);
-      }).on('passed', function (passedResults) {
+      }).on('passed', function (passedResult) {
         tests++;
         passed++;
-        console.log(tab, '  ', _colors2.default.green.bold('√'), _colors2.default.grey('is' + passedResults.label.split('is')[1]));
-      }).on('failed', function (failedResults) {
+        console.log(tab, '  ', _colors2.default.green.bold('√'), _colors2.default.grey('is' + passedResult.label.split('is')[1]));
+      }).on('failed', function (failedResult) {
         tests++;
         failed++;
-        console.log(tab, '  ', _colors2.default.red.bold('×'), _colors2.default.red('is' + failedResults.label.split('is')[1]));
+        console.log(tab, '  ', _colors2.default.red.bold('×'), _colors2.default.red('is' + failedResult.label.split('is')[1]));
       }).on('_done', function () {
         tab = tab.replace(/\s\s$/, '');
       }).on('done', function () {
