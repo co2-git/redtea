@@ -23,13 +23,101 @@ var _format = require('../lib/format');
 
 var _format2 = _interopRequireDefault(_format);
 
+var _fetch = require('../lib/fetch');
+
+var _fetch2 = _interopRequireDefault(_fetch);
+
+var _describe = require('../lib/describe');
+
+var _package = require('../../../package.json');
+
+var _package2 = _interopRequireDefault(_package);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
+function overthrow(error) {
+  console.log(_colors2.default.yellow(error.stack));
+  process.exit(8);
+}
+
+// For Unix use: pkill redtea
+process.title = 'redtea';
+
+console.log(_colors2.default.red.bold('redtea v' + _package2.default.version));
+
+// the test
+var over = false;
+
+process.on('exit', function () {
+  if (!over) {
+    var margin = pad(' ', 16);
+    console.log('  ', _colors2.default.bgRed(pad(' ', 52)));
+    console.log('  ', _colors2.default.bgRed.bold(margin + 'TEST FAILED   (EXIT)' + margin));
+    console.log('  ', _colors2.default.bgRed(pad(' ', 52)));
+  }
+});
+
 var tests = 0;
 var passed = 0;
 var failed = 0;
+var done = 0;
+var skipped = 0;
+var tab = '';
+
+function runAll() {
+  for (var _len = arguments.length, functions = Array(_len), _key = 0; _key < _len; _key++) {
+    functions[_key] = arguments[_key];
+  }
+
+  var cursor = 0;
+  function runOne() {
+    if (functions[cursor]) {
+      functions[cursor]().on('batch', function (label) {
+        console.log(tab, _colors2.default.bgBlue(label));
+        tab += '  ';
+      }).on('describe', function (subject, options) {
+        var label = void 0;
+        var as = _lodash2.default.find(options, 'as');
+        if (as) {
+          label = as.as;
+        } else {
+          label = (0, _format2.default)(subject);
+        }
+        console.log(tab, label);
+      }).on('passed', function (passedResults) {
+        tests++;
+        passed++;
+        console.log(tab, '  ', _colors2.default.green.bold('√'), _colors2.default.grey('is' + passedResults.label.split('is')[1]));
+      }).on('failed', function (failedResults) {
+        tests++;
+        failed++;
+        console.log(tab, '  ', _colors2.default.red.bold('×'), _colors2.default.red('is' + failedResults.label.split('is')[1]));
+      }).on('_done', function () {
+        tab = tab.replace(/\s\s$/, '');
+      }).on('done', function () {
+        tab = tab.replace(/\s\s$/, '');
+        cursor++;
+        runOne();
+      });
+    } else {
+      over = true;
+      console.log({ tests: tests, done: done, skipped: skipped, passed: passed, failed: failed });
+
+      if (tests === passed) {
+        console.log('  ', _colors2.default.bgGreen(pad(' ', 52)));
+        console.log('  ', _colors2.default.white.bgGreen.bold(pad(' ', 17), 'ALL TESTS PASSED', pad(' ', 17)));
+        console.log('  ', _colors2.default.bgGreen(pad(' ', 52)));
+      } else {
+        console.log(_colors2.default.bgRed(pad(' ', 52)));
+        console.log('  ', _colors2.default.white.bgRed.bold(pad(' ', 17), failed + ' TEST FAILED', pad(' ', 17)));
+        console.log(_colors2.default.bgRed(pad(' ', 52)));
+      }
+    }
+  }
+  runOne();
+}
 
 function pad(character, times) {
   return _lodash2.default.range(times).map(function () {
@@ -37,67 +125,38 @@ function pad(character, times) {
   }).join('');
 }
 
-function readResult(result) {
-  var tab = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
+var props = {};
+var flags = [];
+var files = [];
 
-  console.log(tab, _colors2.default.cyan.bold(result.label));
-  result.results.forEach(function (result2) {
-    // console.log(require('util').inspect(result2, { depth: null }));
-    if ('subject' in result2) {
-      console.log(tab, '  ', _colors2.default.bold((0, _format2.default)(result2.subject)));
-      result2.results.forEach(function (result3) {
-        tests++;
-        var symbol = result3.passed ? '√' : '×';
-        var symbolColor = result3.passed ? 'green' : 'red';
-        var labelColor = result3.passed ? 'grey' : 'red';
-        if (result3.passed) {
-          passed++;
-        } else {
-          failed++;
-        }
-        console.log(tab, '    ', _colors2.default[symbolColor].bold(symbol), _colors2.default[labelColor]('is' + result3.label.split('is')[1]));
-      });
-    } else if ('label' in result2) {
-      readResult(result2, tab + '  ');
-    }
-  });
-}
-
-var _process$argv = _slicedToArray(process.argv, 3);
-
-var file = _process$argv[2];
-
-
-var test = require(_path2.default.join(process.cwd(), file)).default;
-
-var testResults = [];
-
-(0, _promiseSequencer2.default)(test).then(function (results) {
-  testResults.push.apply(testResults, _toConsumableArray(results));
-}).catch(function (error) {
-  console.log({ error: error });
-  var err = _lodash2.default.pick(error, ['name', 'subject', 'value', 'type', 'message']);
-  console.log(err, testResults);
-  // testResults.push({
-  //   subject,
-  //
-  // });
-}).then(function () {
-  // console.log(require('util').inspect(testResults, { depth: null }));
-  testResults.forEach(function (result) {
-    return readResult(result);
-  });
-
-  console.log();
-  console.log({ tests: tests, passed: passed });
-  console.log();
-
-  if (tests === passed) {
-    console.log('  ', _colors2.default.bgGreen(pad(' ', 52)));
-    console.log('  ', _colors2.default.white.bgGreen.bold(pad(' ', 17), 'ALL TESTS PASSED', pad(' ', 17)));
-    console.log('  ', _colors2.default.bgGreen(pad(' ', 52)));
+// Process command line arguments
+process.argv.filter(function (arg, index) {
+  return index > 1;
+}).forEach(function (arg) {
+  if (/\=/.test(arg)) {
+    var bits = arg.split('=');
+    props[bits[0]] = bits[1];
+  } else if (/^--/.test(arg)) {
+    flags.push(arg.replace(/^--/, ''));
   } else {
-    console.log(_colors2.default.bgRed(pad(' ', 52)));
-    console.log(_colors2.default.bgRed(pad(' ', 52)));
+    files.push(arg);
   }
+});
+
+(0, _promiseSequencer2.default)(function () {
+  return _fetch2.default.getFiles.apply(_fetch2.default, files);
+}, function (_files) {
+  return _fetch2.default.getFunctions(_files, props, flags);
+}).then(function (results) {
+  try {
+    var _results = _slicedToArray(results, 2);
+
+    var functions = _results[1];
+
+    runAll.apply(undefined, _toConsumableArray(functions));
+  } catch (error) {
+    overthrow(error);
+  }
+}).catch(function (error) {
+  overthrow(error);
 });

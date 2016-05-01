@@ -17,6 +17,10 @@ describe = describe;
 
 var _events = require('events');
 
+var _promiseSequencer = require('promise-sequencer');
+
+var _promiseSequencer2 = _interopRequireDefault(_promiseSequencer);
+
 var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
@@ -97,13 +101,6 @@ it.is.false = itIs(false);
 it.is.null = itIs(null);
 it.is.undefined = itIs(undefined);
 
-it.is.not = itIsNot;
-
-it.is.not.true = itIsNot(true);
-it.is.not.false = itIsNot(false);
-it.is.not.null = itIsNot(null);
-it.is.not.undefined = itIsNot(undefined);
-
 var aa = 'a';
 it.is[aa] = itIsA;
 it.is.an = itIsA;
@@ -112,84 +109,28 @@ it.is.a.number = itIsA(Number);
 it.is.a.boolean = itIsA(Boolean);
 it.is.a.date = itIsA(Date);
 it.is.a.promise = itIsA(Promise);
-it.is.a.function = itIsA(Function);
 it.is.a.regular = { expression: itIsA(RegExp) };
 it.is.an.emitter = itIsA(_events.EventEmitter);
 it.is.an.error = itIsA(Error);
 it.is.an.object = itIsA(Object);
 it.is.an.array = itIsA(Array);
+it.is.not = itIsNot;
 it.is.not[aa] = itIsNotA;
 it.is.not.an = itIsNotA;
 it.is.not.an.error = itIsNotA(Error);
 it.is.not.a.string = itIsNotA(String);
 it.is.not.a.number = itIsNotA(Number);
-it.is.not.a.function = itIsNotA(Function);
 it.is.not.a.boolean = itIsNotA(Boolean);
 it.is.not.an.object = itIsNotA(Object);
 it.is.not.an.array = itIsNotA(Array);
 it.is.not.an.emitter = itIsNotA(_events.EventEmitter);
 it.is.not.a.promise = itIsNotA(Promise);
 it.is.not.a.date = itIsNotA(Date);
-it.is.not.a.regular = { expression: itIsNotA(RegExp) };
-
-var isThrowing = function isThrowing(error) {
-  return function (subject) {
-    var label = 'is throwing ' + error.name;
-    if (typeof subject !== 'function') {
-      return new _is.Is(label, subject, {
-        passed: false,
-        error: new Error('Exprecting a function')
-      });
-    }
-    var passed = true;
-    try {
-      subject();
-      passed = false;
-    } catch (err) {
-      passed = err.name === error.name;
-    } finally {
-      return new _is.Is(label, subject, {
-        passed: passed
-      });
-    }
-  };
-};
-
-it.is.throwing = isThrowing;
-
-it.is.not.throwing = function () {
-  var error = arguments.length <= 0 || arguments[0] === undefined ? new Error('') : arguments[0];
-  return function (subject) {
-    var label = 'is not throwing ' + error.name;
-    if (typeof subject !== 'function') {
-      return new _is.Is(label, subject, {
-        passed: false,
-        error: new Error('Exprecting a function')
-      });
-    }
-    var passed = true;
-    try {
-      subject();
-    } catch (err) {
-      passed = err.name !== error.name;
-    } finally {
-      return new _is.Is(label, subject, {
-        passed: passed
-      });
-    }
-  };
-};function describe(subject) {
+it.is.not.a.regular = { expression: itIsNotA(RegExp) };function describe(subject) {
   for (var _len2 = arguments.length, describers = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
     describers[_key2 - 1] = arguments[_key2];
   }
 
-  // Separate functions from ocnfigurations
-  var functions = describers.filter(function (describer) {
-    return typeof describer === 'function';
-  });
-  var options = describers.filter(function (describer) {
-    return (typeof describer === 'undefined' ? 'undefined' : _typeof(describer)) === 'object';
-  });
   // The test emitter
   var emitter = new _events.EventEmitter();
   // The function to emit
@@ -223,15 +164,15 @@ it.is.not.throwing = function () {
     //  - if so, it will exit the test as done.
     var done = function done() {
       if (!waitFor.length) {
-        emit('done', results, options);
+        emit('done', results);
       }
     };
     // tell listeners we are beginning the test
-    emit('describe', _subject, options);
+    emit('describe', _subject);
     // the results of the test go here
     var results = [];
     // Testing each describer on the subject
-    functions.forEach(function (describer) {
+    describers.forEach(function (describer) {
       // The result of this particular describer
       // We expect two kind of results here:
       // - a Is (it is a regular describer)
@@ -350,42 +291,33 @@ function batch(label) {
     describers[_key5 - 1] = arguments[_key5];
   }
 
-  var functions = describers.filter(function (describer) {
-    return typeof describer === 'function';
-  });
-  var emitter = new _events.EventEmitter();
-  process.nextTick(function () {
-    emitter.emit('batch', label);
-    if (!functions.length) {
-      emitter.emit('done', []);
-      return;
-    }
-    var subResults = [];
-    var isDone = function isDone() {
-      if (subResults.length === functions.length) {
-        emitter.emit('done', subResults);
-      }
-    };
-    functions.forEach(function (fn) {
-      var describer = fn();
-      describer.on('batch', function (label) {
-        return emitter.emit('batch', label);
-      }).on('describe', function (subject) {
-        var options = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
-        return emitter.emit('describe', subject, options);
-      }).on('passed', function (results) {
-        return emitter.emit('passed', results);
-      }).on('failed', function (results) {
-        return emitter.emit('failed', results);
-      }).on('done', function (results) {
-        return emitter.emit('_done', results);
-      }).on('done', function (results) {
-        subResults.push(results);
-        isDone();
-      });
+  return new Promise(function (resolve, reject) {
+    console.log(label);
+    var functions = describers.filter(function (describer) {
+      return typeof describer === 'function';
     });
+    var options = describers.filter(function (describer) {
+      return (typeof describer === 'undefined' ? 'undefined' : _typeof(describer)) === 'object';
+    });
+    (0, _promiseSequencer2.default)(functions).then(function (results) {
+      return resolve({ label: label, results: results, options: options });
+    }).catch(reject);
   });
-  return emitter;
 }
 
 describe.batch = batch;
+
+// const emitter = new EventEmitter();
+//
+// process.nextTick(() => {
+//   emitter.emit('hello', 5);
+// });
+
+// describe(1, it.is.a.number, it.is.a.string)
+// describe(new Promise((resolve) => resolve('hello')), it.is('hello'))
+// describe(emitter, it.is.a(EventEmitter))
+// describe(emitter, it.emits('hello', (number) => describe(number, it.is(5))))
+//   .on('describe', (subject) => console.log({subject}))
+//   .on('passed', (result) => console.log('√', result))
+//   .on('failed', (result) => console.log('X', result))
+//   .on('done', (results) => console.log('done', results));

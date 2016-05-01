@@ -8,16 +8,25 @@ import _ from 'lodash';
 import AssertionError from './AssertionError';
 import format from './format';
 
-export type $is = {
-  label: string,
-  passed: boolean,
-  subject: any,
-  value?: any,
-  type?: Function,
-  event?: string,
-};
+export class Is {
+  label: string;
+  passed: boolean;
+  subject: any;
+  value: any;
+  type: Function;
+  event: string;
 
-const is = (subject: any, value: any, not : boolean = false): $is => {
+  constructor(label: string, subject: any, options: Object) {
+    this.label = label;
+    this.subject = subject;
+    this.passed = options.passed;
+    this.value = options.value;
+    this.type = options.type;
+    this.event = options.event;
+  }
+}
+
+const is = (subject: any, value: any, not : boolean = false): Is => {
   const label = `${format(subject)} is ${not ? 'not ' : ''}${format(value)}`;
   let passed;
   switch (value) {
@@ -47,7 +56,7 @@ const is = (subject: any, value: any, not : boolean = false): $is => {
   if (not) {
     passed = !passed;
   }
-  return {label, subject, value, passed};
+  return new Is(label, subject, {value, passed});
 };
 
 is.not = (subject: any, value: any): Object => is(subject, value, true);
@@ -56,9 +65,28 @@ is.type = (subject: any, type: Function, not : boolean = false): Object => {
   if (typeof type !== 'function') {
     throw new Error('Type must be a function');
   }
-  const article = /^(a|e|i|o|u)/i.test(type.name) ? 'an' : 'a';
-  const label =
-    `${format(subject)} is ${not ? 'not ' : ''}${article} ${type.name}`;
+  let label = `${format(subject)} is ${not ? 'not ' : ''}`;
+  switch (type) {
+  case String:
+  case Number:
+  case Boolean:
+  case Function:
+  case Date:
+    label += 'a ' + type.name.toLowerCase();
+    break;
+  case Object:
+  case Array:
+  case Error:
+    label += 'an ' + type.name.toLowerCase();
+    break;
+  case RegExp:
+    label += 'a regular expression';
+    break;
+  default: {
+    const article = /^(a|e|i|o|u)/i.test(type.name) ? 'an' : 'a';
+    label += `${article} ${type.name}`;
+  }
+  }
   let passed;
   switch (type) {
   case String:
@@ -94,7 +122,7 @@ is.type = (subject: any, type: Function, not : boolean = false): Object => {
   if (not) {
     passed = !passed;
   }
-  return {label, subject, type, passed};
+  return new Is(label, subject, {type, passed});
 };
 
 is.not.type = (subject: any, type: Function)

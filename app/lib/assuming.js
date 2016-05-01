@@ -5,25 +5,30 @@
 **/
 
 import is from './is';
+import AssertionError from './AssertionError';
 
-type TEST = {
+type TestType = {
   is: Function | {a: Function},
 };
 
-export default function assuming(subject: any): TEST {
-  function asumingThat (value: any, not : boolean = false): void {
+export default function assuming(subject: any): TestType {
+  function asumingThat(value: any, not : boolean = false) {
+    let result;
     if (not) {
-      is.not(subject, value);
+      result = is.not(subject, value);
     } else {
-      is(subject, value);
+      result = is(subject, value);
+    }
+    if (!result.passed) {
+      throw new AssertionError(result.label, subject, value);
     }
   }
 
-  function asumingThatNot(value: any) {
+  function asumingThatNot(value: any): void {
     return asumingThat(value, true);
   }
 
-  function asumingThatA(type: Function, not : boolean = false): void {
+  function asumingThatA(type: Function, not : boolean = false) {
     if (not) {
       is.not.type(subject, type);
     } else {
@@ -31,7 +36,7 @@ export default function assuming(subject: any): TEST {
     }
   }
 
-  function asumingThatNotA(type: Function): void {
+  function asumingThatNotA(type: Function) {
     asumingThatA(type, true);
   }
 

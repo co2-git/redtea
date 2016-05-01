@@ -15,16 +15,8 @@ function indeed(subject) {
   function isIndeed(value) {
     var not = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
-    try {
-      if (not) {
-        _is2.default.not(subject, value);
-      } else {
-        (0, _is2.default)(subject, value);
-      }
-      return true;
-    } catch (error) {
-      return false;
-    }
+    var test = (0, _is2.default)(subject, value);
+    return not ? !test.passed : test.passed;
   }
 
   function isIndeedNot(value) {
@@ -34,16 +26,8 @@ function indeed(subject) {
   function isIndeedA(type) {
     var not = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
-    try {
-      if (not) {
-        _is2.default.not.type(subject, type);
-      } else {
-        _is2.default.type(subject, type);
-      }
-      return true;
-    } catch (error) {
-      return false;
-    }
+    var test = _is2.default.type(subject, type);
+    return not ? !test.passed : test.passed;
   }
 
   function isIndeedNotA(type) {
@@ -58,6 +42,16 @@ function indeed(subject) {
   isIndeed.not = isIndeedNot;
   isIndeed.not[aa] = isIndeedNotA;
   isIndeed.not.an = isIndeedNotA;
+  isIndeed.null = isIndeed(null);
+  isIndeedNot.null = isIndeedNot(null);
+  isIndeed.undefined = isIndeed(undefined);
+  isIndeedNot.undefined = isIndeedNot(undefined);
+  isIndeed.true = isIndeed(true);
+  isIndeedNot.true = isIndeedNot(true);
+  isIndeed.false = isIndeed(false);
+  isIndeedNot.false = isIndeedNot(false);
+  isIndeedA.string = isIndeedA(String);
+  isIndeedNotA.string = isIndeedNotA(String);
 
   return {
     is: isIndeed

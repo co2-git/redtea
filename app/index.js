@@ -1,21 +1,11 @@
-// @flow weak
+/**
+  * @name redtea main module
+  * @description exposes redtea methods
+  * @flow
+**/
 
-import It from './lib/it';
+import indeed from './lib/indeed';
+import assuming from './lib/assuming';
+import {describe, it} from './lib/describe';
 
-function describe(label: string, story: Function): Promise {
-  const test = new It(label, story);
-  const promise = test.run();
-  promise.live = test;
-  return promise;
-}
-
-describe.use = (fn: Function): Function => {
-  return (it: Function): Function => fn()(it);
-};
-
-describe.pause = (ms: number): Function => {
-  return (it: Function): Function =>
-    it('should pause', () => new Promise(ok => setTimeout(ok, ms)));
-};
-
-export default describe;
+export default {indeed, assuming, describe, it};

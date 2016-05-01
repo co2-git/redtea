@@ -18,7 +18,7 @@ Extensive test framework in JavaScript. Different levels of testing offered:
 import {indeed} from 'redtea';
 const foo = 2/2;
 
-if (indeed(foo).is.a(Number) && indeed(foo).is(1)) {
+if (indeed(foo).is.a.number && indeed(foo).is(1)) {
   console.log('√ passed');
 }
 ```
@@ -34,7 +34,7 @@ import {assuming} from 'redtea';
 const foo = 2/2;
 
 try {
-  assuming(foo).is.a(Number);
+  assuming(foo).is.a.number;
   assuming(foo).is(1);
 } catch (error) {}
 ```
@@ -43,18 +43,17 @@ Read more about [assuming](doc/Assuming.md).
 
 # Describe
 
-`describe` lets you run an assertion inside a Promise.
-It uses a TDD syntax and returns a promise so you can stack it.
+`describe` lets you run an asynchronous assertion inside an emitter.
 
 ```javascript
 import {describe, it} from 'redtea';
 
-describe(true, it.is.a(Boolean), it.is(true)).then().catch();
+describe(true, it.is.a.boolean, it.is.true).then().catch();
 ```
 
 ## Promises
 
-You can easily asserts what is returned by promises.
+You can easily assert what is returned by promises.
 
 ```javascript
 const myPromise = new Promise((resolve) => resolve(42));
@@ -100,7 +99,7 @@ export default () => describe.batch('My tests',
   () => describe(true, it.is(true)),
   () => describe(false, it.is.not(true), it.is(false)),
   () => describe.batch('Nested test',
-    () => describe(22, it.is.a(Number))
+    () => describe(22, it.is.a.number)
   )
 );
 

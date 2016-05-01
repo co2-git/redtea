@@ -1,71 +1,128 @@
-#!/usr/bin/env node
+#!/usr/bin/bash
 'use strict';
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-//  weak
 
-var _safe = require('colors/safe');
+var _path = require('path');
 
-var _safe2 = _interopRequireDefault(_safe);
+var _path2 = _interopRequireDefault(_path);
+
+var _colors = require('colors');
+
+var _colors2 = _interopRequireDefault(_colors);
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
 
 var _promiseSequencer = require('promise-sequencer');
 
 var _promiseSequencer2 = _interopRequireDefault(_promiseSequencer);
 
-var _bin = require('../lib/bin');
+var _format = require('../lib/format');
 
-var _bin2 = _interopRequireDefault(_bin);
+var _format2 = _interopRequireDefault(_format);
 
-var _package = require('../../package.json');
+var _fetch = require('../lib/fetch');
+
+var _fetch2 = _interopRequireDefault(_fetch);
+
+var _describe = require('../lib/describe');
+
+var _package = require('../../../package.json');
 
 var _package2 = _interopRequireDefault(_package);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var package_json = _package2.default;
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-function printTime(time) {
-  var duration = '';
-
-  if (time < 1000) {
-    duration = time + 'ms';
-  } else if (time < 1000 * 60) {
-    duration = time / 1000 + 's';
-  } else if (time < 1000 * (60 * 60)) {
-    duration = time / 1000 / 60 + 'minutes';
-  }
-
-  return { time: time, duration: duration };
+function overthrow(error) {
+  console.log(_colors2.default.yellow(error.stack));
+  process.exit(8);
 }
-
-function pad(character, times) {
-  var str = '';
-  for (var iterate = 0; iterate < times; iterate++) {
-    str += character;
-  }
-  return str;
-}
-
-// the test
-var done = false;
 
 // For Unix use: pkill redtea
 process.title = 'redtea';
 
+console.log(_colors2.default.red.bold('redtea v' + _package2.default.version));
+
+// the test
+var over = false;
+
 process.on('exit', function () {
-  if (!done) {
+  if (!over) {
     var margin = pad(' ', 16);
-    console.log('  ', _safe2.default.bgRed(pad(' ', 52)));
-    console.log('  ', _safe2.default.bgRed.bold(margin + 'TEST FAILED   (EXIT)' + margin));
-    console.log('  ', _safe2.default.bgRed(pad(' ', 52)));
+    console.log('  ', _colors2.default.bgRed(pad(' ', 52)));
+    console.log('  ', _colors2.default.bgRed.bold(margin + 'TEST FAILED   (EXIT)' + margin));
+    console.log('  ', _colors2.default.bgRed(pad(' ', 52)));
   }
 });
 
-console.log(_safe2.default.red.bold('redtea v' + package_json.version));
+var tests = 0;
+var passed = 0;
+var failed = 0;
+var done = 0;
+var skipped = 0;
+var tab = '';
 
-if (process.argv[2] === '-v') {
-  done = true;
-  process.exit(0);
+function runAll() {
+  for (var _len = arguments.length, functions = Array(_len), _key = 0; _key < _len; _key++) {
+    functions[_key] = arguments[_key];
+  }
+
+  var cursor = 0;
+  function runOne() {
+    if (functions[cursor]) {
+      functions[cursor]().on('batch', function (label) {
+        console.log(tab, _colors2.default.bgBlue(label));
+        tab += '  ';
+      }).on('describe', function (subject, options) {
+        var label = void 0;
+        var as = _lodash2.default.find(options, 'as');
+        if (as) {
+          label = as.as;
+        } else {
+          label = (0, _format2.default)(subject);
+        }
+        console.log(tab, label);
+      }).on('passed', function (passedResults) {
+        tests++;
+        passed++;
+        console.log(tab, '  ', _colors2.default.green.bold('√'), _colors2.default.grey('is' + passedResults.label.split('is')[1]));
+      }).on('failed', function (failedResults) {
+        tests++;
+        failed++;
+        console.log(tab, '  ', _colors2.default.red.bold('×'), _colors2.default.red('is' + failedResults.label.split('is')[1]));
+      }).on('_done', function () {
+        tab = tab.replace(/\s\s$/, '');
+      }).on('done', function () {
+        tab = tab.replace(/\s\s$/, '');
+        cursor++;
+        runOne();
+      });
+    } else {
+      over = true;
+      console.log({ tests: tests, done: done, skipped: skipped, passed: passed, failed: failed });
+
+      if (tests === passed) {
+        console.log('  ', _colors2.default.bgGreen(pad(' ', 52)));
+        console.log('  ', _colors2.default.white.bgGreen.bold(pad(' ', 17), 'ALL TESTS PASSED', pad(' ', 17)));
+        console.log('  ', _colors2.default.bgGreen(pad(' ', 52)));
+      } else {
+        console.log(_colors2.default.bgRed(pad(' ', 52)));
+        console.log('  ', _colors2.default.white.bgRed.bold(pad(' ', 17), failed + ' TEST FAILED', pad(' ', 17)));
+        console.log(_colors2.default.bgRed(pad(' ', 52)));
+      }
+    }
+  }
+  runOne();
+}
+
+function pad(character, times) {
+  return _lodash2.default.range(times).map(function () {
+    return character;
+  }).join('');
 }
 
 var props = {};
@@ -87,220 +144,19 @@ process.argv.filter(function (arg, index) {
 });
 
 (0, _promiseSequencer2.default)(function () {
-  return _bin2.default.getFiles.apply(_bin2.default, files);
+  return _fetch2.default.getFiles.apply(_fetch2.default, files);
 }, function (_files) {
-  return _bin2.default.getFunctions(_files, props, flags);
+  return _fetch2.default.getFunctions(_files, props, flags);
 }).then(function (results) {
-  var _results = _slicedToArray(results, 2);
+  try {
+    var _results = _slicedToArray(results, 2);
 
-  var functions = _results[1];
+    var functions = _results[1];
 
-  var runner = _bin2.default.runFunctions(functions, props, flags);
-  runner.live.on('error', function (error) {
-    return console.log(error.stack);
-  }).on('failed', function (test) {
-    if (!test.children.length) {
-      var _printTime = printTime(test.time);
-
-      var duration = _printTime.duration;
-      var time = _printTime.time;
-
-
-      if (time < 50) {
-        duration = _safe2.default.white('(' + duration + ')');
-      } else if (time < 100) {
-        duration = _safe2.default.yellow('(' + duration + ')');
-      } else {
-        duration = _safe2.default.red('(' + duration + ')');
-      }
-
-      var tab = '';
-
-      if (test.parents.length) {
-        for (var cursor = 0; cursor < test.parents.length; cursor++) {
-          tab += _safe2.default.grey('|_');
-        }
-      }
-
-      console.log(tab + _safe2.default.bold.red('✖'), _safe2.default.red(test.label), duration);
-
-      var lines = test.error.stack.split(/\n/).map(function (line) {
-        return line.yellow;
-      }).join('\n' + tab);
-
-      console.log(tab + ' ' + lines);
-    }
-  }).on('passed', function (test) {
-    if (!test.children.length) {
-      var _printTime2 = printTime(test.time);
-
-      var duration = _printTime2.duration;
-      var time = _printTime2.time;
-
-
-      if (time < 50) {
-        duration = _safe2.default.white('(' + duration + ')');
-      } else if (time < 100) {
-        duration = _safe2.default.yellow('(' + duration + ')');
-      } else {
-        duration = _safe2.default.red('(' + duration + ')');
-      }
-
-      var tab = '';
-
-      if (test.parents.length) {
-        for (var cursor = 0; cursor < test.parents.length; cursor++) {
-          tab += _safe2.default.grey('|_');
-        }
-      }
-      console.log(tab + _safe2.default.bold.green('✔'), test.label.grey, duration);
-    }
-  }).on('test', function (test) {
-    if (test.children.length) {
-      var tab = '';
-
-      if (test.parents.length) {
-        for (var cursor = 0; cursor < test.parents.length; cursor++) {
-          tab += _safe2.default.grey('|_');
-        }
-      }
-
-      console.log(tab + '↘', _safe2.default.bold(test.label));
-    }
-  });
-
-  runner.then(function (run_results) {
-    done = true;
-    var tests = [],
-        passed = [],
-        failed = [],
-        time = 0;
-    run_results.forEach(function (result) {
-      tests = tests.concat(result.children.filter(function (test) {
-        return !test.children.length;
-      }));
-      passed = passed.concat(result.passed.filter(function (test) {
-        return !test.children.length;
-      }));
-      failed = failed.concat(result.failed.filter(function (test) {
-        return !test.children.length;
-      }));
-      time += result.time;
-    });
-
-    var _printTime3 = printTime(time);
-
-    var duration = _printTime3.duration;
-
-
-    var test_num = tests.length + ' tests in ' + duration;
-    var passed_num = passed.length + ' passed';
-    var failed_num = failed.length + ' failed';
-
-    console.log();
-    console.log('   ', pad('-', 44));
-    console.log('  ', _safe2.default.bold(test_num), _safe2.default.green(passed_num), _safe2.default.red(failed_num));
-    console.log('  ', pad('-', 44));
-
-    if (failed.length) {
-      console.log('  ', _safe2.default.bgRed(pad(' ', 44)));
-      console.log('  ', _safe2.default.bgRed.bold(pad(' ', 16) + 'TEST FAILED   (x' + failed.length + ')' + pad(' ', 20)));
-      console.log('  ', _safe2.default.bgRed(pad(' ', 44)));
-      console.log();
-
-      failed.forEach(function (test, index) {
-        var parents = test.parents.map(function (parent) {
-          return _safe2.default.bgRed(' ' + parent.label + ' ');
-        }).join('\n');
-
-        if (parents) {
-          parents += '\n';
-        }
-
-        console.log(_safe2.default.bgRed.bold(index + 1 + '/' + failed.length), '--', parents, _safe2.default.red.bold(test.label), _safe2.default.red.italic('failed after ' + printTime(test.time).duration));
-
-        console.log(test.error.stack.yellow);
-
-        console.log();
-        console.log();
-      });
-    } else {
-      console.log('  ', _safe2.default.bgGreen(pad(' ', 48)));
-      console.log('  ', _safe2.default.bgGreen.bold(pad(' ', 16) + 'ALL TESTS PASSED' + pad(' ', 16)));
-      console.log('  ', _safe2.default.bgGreen(pad(' ', 48)));
-    }
-
-    if (typeof process.send === 'function') {
-      process.send(JSON.stringify({ redtea: {
-          children: tests.map(function (test) {
-            return {
-              label: test.label,
-              status: test.status,
-              time: test.time,
-              id: test.id,
-              children: test.children.map(function (child) {
-                return {
-                  label: child.label,
-                  status: child.status,
-                  time: child.time,
-                  id: child.id
-                };
-              })
-            };
-          }),
-          passed: passed.map(function (test) {
-            return {
-              label: test.label,
-              status: test.status,
-              time: test.time,
-              id: test.id,
-              children: test.children.map(function (child) {
-                return {
-                  label: child.label,
-                  status: child.status,
-                  time: child.time,
-                  id: child.id
-                };
-              })
-            };
-          }),
-          failed: failed.map(function (test) {
-            return {
-              label: test.label,
-              status: test.status,
-              time: test.time,
-              id: test.id,
-              error: {
-                name: test.error.name,
-                message: test.error.message,
-                stack: test.error.stack
-              },
-              children: test.children.map(function (child) {
-                return {
-                  label: child.label,
-                  status: child.status,
-                  time: child.time,
-                  id: child.id
-                };
-              }),
-              parents: test.parents.map(function (parent) {
-                return {
-                  label: parent.label,
-                  status: parent.status,
-                  time: parent.time,
-                  id: parent.id
-                };
-              })
-            };
-          }),
-          time: time
-        } }));
-    }
-
-    process.exit(failed.length);
-  }).catch(function (error) {
-    return console.log(error.stack);
-  });
+    runAll.apply(undefined, _toConsumableArray(functions));
+  } catch (error) {
+    overthrow(error);
+  }
 }).catch(function (error) {
-  return console.log(error.stack);
+  overthrow(error);
 });
