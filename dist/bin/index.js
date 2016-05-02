@@ -91,7 +91,7 @@ function runAll() {
         failed++;
         console.log(tab, '  ', _colors2.default.red.bold('×'), _colors2.default.red('is' + failedResult.label.split('is')[1]));
       }).on('_done', function () {
-        tab = tab.replace(/\s\s$/, '');
+        // tab = tab.replace(/\s{2}$/, '');
       }).on('done', function () {
         tab = tab.replace(/\s\s$/, '');
         cursor++;

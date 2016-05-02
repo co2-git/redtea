@@ -144,10 +144,10 @@ export function describe(
   ): EventEmitter {
   // Separate functions from ocnfigurations
   const functions = describers.filter(
-    describer => typeof describer === 'function'
+    (describer: DescriberType): boolean => typeof describer === 'function'
   );
   const options = describers.filter(
-    describer => typeof describer === 'object'
+    (describer: DescriberType): boolean => typeof describer === 'object'
   );
   // The test emitter
   const emitter = new EventEmitter();
@@ -161,16 +161,16 @@ export function describe(
   );
   // the function to run describers on a subject. Note that it is curried
   // because a blocking subject will call it asynchronously
-  const run = (_subject: any): void => {
+  const run = (_subject: any) => {
     // In case there are asynchronous events to wait for, we put a counter here.
     // Like this, when an asynchronous event is done, we know if there are more
     //  to wait for.
     // So this variable below acts like a pseudo generator that will assign
     //  unique keys to each actions.
-    type cursor = number;
-    let waitForCursor: cursor = 0;
+    type CursorType = number;
+    let waitForCursor: CursorType = 0;
     // This array will contain all the unique ids
-    let waitFor: Array<cursor> = [];
+    let waitFor: Array<CursorType> = [];
     // The function that is called everytime a specific describer is done.
     // It will decide if describer was the last one of the list
     //  - if so, it will exit the test as done.
@@ -184,7 +184,7 @@ export function describe(
     // the results of the test go here
     const results: Array<Is> = [];
     // Testing each describer on the subject
-    functions.forEach(describer => {
+    functions.forEach((describer: Function) => {
       // The result of this particular describer
       // We expect two kind of results here:
       // - a Is (it is a regular describer)
@@ -267,18 +267,18 @@ export function describe(
               } else {
                 // We now run each describer which will return emitters
                 result.checkers.forEach(
-                  (checker: Function): void => {
+                  (checker: Function) => {
                     const subEmitter: EventEmitter = checker(...messages);
                     // we add unique keys also to our sub emitters
                     const subEmitterKey = waitForCursor++;
                     subEmitter
-                      .on('describe', (subSubject: any) => emitter
+                      .on('describe', (subSubject: any): boolean => emitter
                         .emit('describe', subSubject)
                       )
-                      .on('passed', (subResults: Array<Is>) => emitter
+                      .on('passed', (subResults: Array<Is>): boolean => emitter
                         .emit('passed', subResults)
                       )
-                      .on('failed', (subResults: Array<Is>) => emitter
+                      .on('failed', (subResults: Array<Is>): boolean => emitter
                         .emit('failed', subResults)
                       )
                       .on('done', (subResults: Array<Is>) => {
@@ -311,12 +311,14 @@ export function describe(
   return emitter;
 }
 
+type DescriberType = Function | Object;
+
 function batch(
   label: string,
-  ...describers: Array<Function | Object>
+  ...describers: Array<DescriberType>
   ): EventEmitter {
-  const functions = describers.filter(
-    describer => typeof describer === 'function'
+  const functions: Array<Function> = describers.filter(
+    (describer: Function | Object): boolean => typeof describer === 'function'
   );
   const emitter = new EventEmitter();
   process.nextTick(() => {
@@ -331,17 +333,20 @@ function batch(
         emitter.emit('done', subResults);
       }
     };
-    functions.forEach(fn => {
+    functions.forEach((fn: Function) => {
       const describer = fn();
       describer
-        .on('batch', label => emitter.emit('batch', label))
-        .on('describe', (subject, options = []) =>
-          emitter.emit('describe', subject, options)
+        .on('batch', (describerLabel: string): boolean =>
+            emitter.emit('batch', describerLabel))
+        .on('describe',
+          (subject: string, options: Array<Object> = []): boolean =>
+            emitter.emit('describe', subject, options)
         )
-        .on('passed', (results) => emitter.emit('passed', results))
-        .on('failed', results => emitter.emit('failed', results))
-        .on('done', results => emitter.emit('_done', results))
-        .on('done', results => {
+        .on('passed', (results: Is): boolean => emitter.emit('passed', results))
+        .on('failed', (results: Is): boolean => emitter.emit('failed', results))
+        .on('done', (results: Array<Is>): boolean =>
+          emitter.emit('_done', results))
+        .on('done', (results: Array<Is>) => {
           subResults.push(results);
           isDone();
         });

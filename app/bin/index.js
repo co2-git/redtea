@@ -80,7 +80,7 @@ function runAll(...functions: Array<Function>) {
           );
         })
         .on('_done', () => {
-          tab = tab.replace(/\s\s$/, '');
+          // tab = tab.replace(/\s{2}$/, '');
         })
         .on('done', () => {
           tab = tab.replace(/\s\s$/, '');

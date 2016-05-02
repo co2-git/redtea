@@ -368,8 +368,8 @@ function batch(label) {
     };
     functions.forEach(function (fn) {
       var describer = fn();
-      describer.on('batch', function (label) {
-        return emitter.emit('batch', label);
+      describer.on('batch', function (describerLabel) {
+        return emitter.emit('batch', describerLabel);
       }).on('describe', function (subject) {
         var options = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
         return emitter.emit('describe', subject, options);
