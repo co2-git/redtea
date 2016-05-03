@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.it = exports.describe = exports.assuming = exports.indeed = undefined;
 
 var _indeed = require('./lib/indeed');
 
@@ -16,8 +17,12 @@ var _describe = require('./lib/describe');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.default = { indeed: _indeed2.default, assuming: _assuming2.default, describe: _describe.describe, it: _describe.it }; /**
-                                                                                                                                * @name redtea main module
-                                                                                                                                * @description exposes redtea methods
-                                                                                                                                * 
-                                                                                                                              **/
+exports.indeed = _indeed2.default; /**
+                                     * @name redtea main module
+                                     * @description exposes redtea methods
+                                     * 
+                                   **/
+
+exports.assuming = _assuming2.default;
+exports.describe = _describe.describe;
+exports.it = _describe.it;
