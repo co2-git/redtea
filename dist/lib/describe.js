@@ -273,6 +273,7 @@ it.is.not.throwing = function () {
                 }, 2500);
                 // We put a listener that would trigger a fail if emitted
                 _subject.once(result.event, function () {
+                  console.log('should not emit', { event: event });
                   clearTimeout(shouldNotEmit);
                   var failDidNotEmit = new _is.Is('is not emitting "' + result.event + '"', _subject, {
                     event: result.event,

@@ -231,6 +231,7 @@ export function describe(
             }, 2500);
             // We put a listener that would trigger a fail if emitted
             _subject.once(result.event, () => {
+              console.log('should not emit', {event});
               clearTimeout(shouldNotEmit);
               const failDidNotEmit: Is = new Is(
                 `is not emitting "${result.event}"`,
