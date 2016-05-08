@@ -106,13 +106,16 @@ it.is.not.a.promise = itIsNotA(Promise);
 it.is.not.a.date = itIsNotA(Date);
 it.is.not.a.regular = { expression: itIsNotA(RegExp) };
 
-var isThrowing = function isThrowing(error) {
+var defaultError = new Error('Default redtea error placeholder');
+
+var isThrowing = function isThrowing() {
+  var error = arguments.length <= 0 || arguments[0] === undefined ? defaultError : arguments[0];
   return function (subject) {
     var label = 'is throwing ' + error.name;
     if (typeof subject !== 'function') {
       return new _is.Is(label, subject, {
         passed: false,
-        error: new Error('Exprecting a function')
+        error: new Error('Expecting a function')
       });
     }
     var passed = true;
@@ -132,13 +135,13 @@ var isThrowing = function isThrowing(error) {
 it.is.throwing = isThrowing;
 
 it.is.not.throwing = function () {
-  var error = arguments.length <= 0 || arguments[0] === undefined ? new Error('') : arguments[0];
+  var error = arguments.length <= 0 || arguments[0] === undefined ? defaultError : arguments[0];
   return function (subject) {
     var label = 'is not throwing ' + error.name;
     if (typeof subject !== 'function') {
       return new _is.Is(label, subject, {
         passed: false,
-        error: new Error('Exprecting a function')
+        error: new Error('Expecting a function')
       });
     }
     var passed = true;

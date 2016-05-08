@@ -76,13 +76,15 @@ it.is.not.a.promise = itIsNotA(Promise);
 it.is.not.a.date = itIsNotA(Date);
 it.is.not.a.regular = {expression: itIsNotA(RegExp)};
 
-const isThrowing: Function = (error: Error): Function =>
+const defaultError = new Error('Default redtea error placeholder');
+
+const isThrowing: Function = (error: Error = defaultError): Function =>
   (subject: Function): Is => {
     const label = `is throwing ${error.name}`;
     if (typeof subject !== 'function') {
       return new Is(label, subject, {
         passed: false,
-        error: new Error('Exprecting a function'),
+        error: new Error('Expecting a function'),
       });
     }
     let passed = true;
@@ -100,13 +102,13 @@ const isThrowing: Function = (error: Error): Function =>
 
 it.is.throwing = isThrowing;
 
-it.is.not.throwing = (error : Error = new Error('')) : Function =>
+it.is.not.throwing = (error : Error = defaultError) : Function =>
   (subject: Function): Is => {
     const label = `is not throwing ${error.name}`;
     if (typeof subject !== 'function') {
       return new Is(label, subject, {
         passed: false,
-        error: new Error('Exprecting a function'),
+        error: new Error('Expecting a function'),
       });
     }
     let passed = true;

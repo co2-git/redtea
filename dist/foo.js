@@ -81,6 +81,8 @@ function describe(subject) {
         results.push(result);
         if (result.passed) {
           emit('passed', _subject, result);
+        } else {
+          emit('failed', _subject, result);
         }
       }
     } catch (err) {
@@ -117,6 +119,8 @@ function wrap(fn) {
     return console.log('describe', subject);
   }).on('passed', function (subject, result) {
     return console.log('passed', result);
+  }).on('failed', function (subject, result) {
+    return console.log('failed', result);
   });
 }
 
@@ -125,5 +129,5 @@ function throwError() {
 }
 
 wrap(function () {
-  return describe(throwError, _it2.default.is.throwing());
+  return describe(throwError, _it2.default.is.not.throwing());
 });

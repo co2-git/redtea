@@ -29,6 +29,8 @@ function describe(subject, ...describers) {
       results.push(result);
       if (result.passed) {
         emit('passed', _subject, result);
+      } else {
+        emit('failed', _subject, result);
       }
     }
   }
@@ -48,11 +50,12 @@ function wrap(fn) {
   fn()
     .on('error', error => console.log(error.stack))
     .on('describe', (subject) => console.log('describe', subject))
-    .on('passed', (subject, result) => console.log('passed', result));
+    .on('passed', (subject, result) => console.log('passed', result))
+    .on('failed', (subject, result) => console.log('failed', result));
 }
 
 function throwError() {
   throw new Error('OOO');
 }
 
-wrap(() => describe(throwError, it.is.throwing()));
+wrap(() => describe(throwError, it.is.not.throwing()));
