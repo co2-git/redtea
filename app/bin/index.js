@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // @flow
 
+import 'babel-polyfill';
 import colors from 'colors';
 import _ from 'lodash';
 import sequencer from 'promise-sequencer';
@@ -110,6 +111,7 @@ function runAll(...functions: Array<Function>) {
       }
     }
   }
+
   runOne();
 }
 

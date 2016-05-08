@@ -3,136 +3,18 @@ import {EventEmitter} from 'events';
 import _ from 'lodash';
 import is, {Is} from './is';
 
-class Listener {
-  event: string;
-  checkers: Array<Function> = [];
-  not: boolean = false;
 
-  constructor(event: string, checkers: Array<Function>, not: boolean = false) {
-    this.event = event;
-    this.checkers = checkers;
-    this.not = not;
-  }
+function describeIt() {
+
 }
 
-function itIs(value: any): Function {
-  return (subject: any): Is => is(subject, value);
+function describePromise(promise: Promise, ...describers: Array<Function>) {
+  promise.then(describeIt, describeIt);
 }
 
-function itIsNot(value: any): Function {
-  return (subject: any): Is => is.not(subject, value);
+function describeEmitter() {
+
 }
-
-function itIsA(type: Function): Function {
-  return (subject: any): Is => is.type(subject, type);
-}
-
-function itIsNotA(value: any): Function {
-  return (subject: any): Is => is.not.type(subject, value);
-}
-
-function emits(event: string, ...checkers: Array<Function>): Function {
-  return (): Listener => new Listener(event, checkers);
-}
-
-function doesNotEmit(event: string): Function {
-  return (): Listener => new Listener(event, [], true);
-}
-
-export const it = {
-  is: itIs,
-  emits,
-  does: {
-    not: {
-      emit: doesNotEmit,
-    },
-  },
-};
-
-it.is.true = itIs(true);
-it.is.false = itIs(false);
-it.is.null = itIs(null);
-it.is.undefined = itIs(undefined);
-
-it.is.not = itIsNot;
-
-it.is.not.true = itIsNot(true);
-it.is.not.false = itIsNot(false);
-it.is.not.null = itIsNot(null);
-it.is.not.undefined = itIsNot(undefined);
-
-const aa = 'a';
-it.is[aa] = itIsA;
-it.is.an = itIsA;
-it.is.a.string = itIsA(String);
-it.is.a.number = itIsA(Number);
-it.is.a.boolean = itIsA(Boolean);
-it.is.a.date = itIsA(Date);
-it.is.a.promise = itIsA(Promise);
-it.is.a.function = itIsA(Function);
-it.is.a.regular = {expression: itIsA(RegExp)};
-it.is.an.emitter = itIsA(EventEmitter);
-it.is.an.error = itIsA(Error);
-it.is.an.object = itIsA(Object);
-it.is.an.array = itIsA(Array);
-it.is.not[aa] = itIsNotA;
-it.is.not.an = itIsNotA;
-it.is.not.an.error = itIsNotA(Error);
-it.is.not.a.string = itIsNotA(String);
-it.is.not.a.number = itIsNotA(Number);
-it.is.not.a.function = itIsNotA(Function);
-it.is.not.a.boolean = itIsNotA(Boolean);
-it.is.not.an.object = itIsNotA(Object);
-it.is.not.an.array = itIsNotA(Array);
-it.is.not.an.emitter = itIsNotA(EventEmitter);
-it.is.not.a.promise = itIsNotA(Promise);
-it.is.not.a.date = itIsNotA(Date);
-it.is.not.a.regular = {expression: itIsNotA(RegExp)};
-
-const isThrowing: Function = (error: Error): Function =>
-  (subject: Function): Is => {
-    const label = `is throwing ${error.name}`;
-    if (typeof subject !== 'function') {
-      return new Is(label, subject, {
-        passed: false,
-        error: new Error('Exprecting a function'),
-      });
-    }
-    let passed = true;
-    try {
-      subject();
-      passed = false;
-    } catch (err) {
-      passed = err.name === error.name;
-    } finally {
-      return new Is(label, subject, {
-        passed,
-      });
-    }
-  };
-
-it.is.throwing = isThrowing;
-
-it.is.not.throwing = (error : Error = new Error('')) : Function =>
-  (subject: Function): Is => {
-    const label = `is not throwing ${error.name}`;
-    if (typeof subject !== 'function') {
-      return new Is(label, subject, {
-        passed: false,
-        error: new Error('Exprecting a function'),
-      });
-    }
-    let passed = true;
-    try {
-      subject();
-    } catch (err) {
-      passed = err.name !== error.name;
-    } finally {
-      return new Is(label, subject, {
-        passed,
-      });
-    }
-  };
 
 // `describe` returns an emitter that will emit the following events:
 // - "describe" (subject: any) this event is triggered to show test has begun
@@ -190,8 +72,9 @@ export function describe(
       // - a Is (it is a regular describer)
       // - a Listener (we want to describer an emitter's events)
       const result: Is | Listener = describer(_subject);
-      // If we have a listner, we need to listen to subject's event
+      // If we have a listener, we need to listen to subject's event
       if (result instanceof Listener) {
+        console.log('I am an emitter');
         // We need to make sure subject is an emitter.
         // We issue a test failure otherwise.
         if (!(_subject instanceof EventEmitter)) {
@@ -213,10 +96,12 @@ export function describe(
           // They are 2 types: should emit AND should not emit.
           // First, deal with "should not emit"
           if (result.not) {
+            console.log('is not', result);
             // a unique id
             const didNotEmitKey = waitForCursor++;
             // a timer that will succeed if event not emitted
             const shouldNotEmit = setTimeout(() => {
+              console.log('i am in settimeotu', _subject);
               const okDidNotEmit: Is = new Is(
                 `is not emitting "${result.event}"`,
                 _subject,
@@ -231,7 +116,7 @@ export function describe(
             }, 2500);
             // We put a listener that would trigger a fail if emitted
             _subject.once(result.event, () => {
-              console.log('should not emit', {event});
+              console.log('should not emit', result);
               clearTimeout(shouldNotEmit);
               const failDidNotEmit: Is = new Is(
                 `is not emitting "${result.event}"`,
