@@ -6,8 +6,7 @@
   "scripts": {
     "babel": "babel --out-dir dist app",
     "babel-watch": "babel --watch --out-dir dist app",
-    "test": "node dist/bin/index.js dist/test",
-    "prepublish": "npm test"
+    "test": "node dist/bin/index.js dist/test"
   },
   "bin": {
     "redtea": "dist/bin/index.js"

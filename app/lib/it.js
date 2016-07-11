@@ -3,37 +3,43 @@ import is, {Is} from './is';
 import Listener from './listener';
 
 function itIs(value: any): Function {
-  return (subject: any): Is => is(subject, value);
+  return function _itIs(subject: any): Is {
+    return is(subject, value);
+  };
 }
 
 function itIsNot(value: any): Function {
-  return (subject: any): Is => is.not(subject, value);
+  return function _itIsNot(subject: any): Is {
+    return is.not(subject, value);
+  };
 }
 
 function itIsA(type: Function): Function {
-  return (subject: any): Is => is.type(subject, type);
+  return function _itIsA(subject: any): Is {
+    return is.type(subject, type);
+  };
 }
 
 function itIsNotA(value: any): Function {
-  return (subject: any): Is => is.not.type(subject, value);
+  return function _itIsNotA(subject: any): Is {
+    return is.not.type(subject, value);
+  };
 }
 
 function emits(event: string, ...checkers: Array<Function>): Function {
-  return (): Listener => new Listener(event, checkers);
+  return function _emits(): Listener {
+    return new Listener(event, checkers);
+  };
 }
 
 function doesNotEmit(event: string): Function {
-  return (): Listener => new Listener(event, [], true);
+  return function _doesNotEmit(): Listener {
+    return new Listener(event, [], true);
+  };
 }
 
 const it = {
   is: itIs,
-  emits,
-  does: {
-    not: {
-      emit: doesNotEmit,
-    },
-  },
 };
 
 it.is.true = itIs(true);
@@ -75,6 +81,8 @@ it.is.not.an.emitter = itIsNotA(EventEmitter);
 it.is.not.a.promise = itIsNotA(Promise);
 it.is.not.a.date = itIsNotA(Date);
 it.is.not.a.regular = {expression: itIsNotA(RegExp)};
+
+it.is.emitting = emits;
 
 const defaultError = new Error('Default redtea error placeholder');
 

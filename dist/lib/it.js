@@ -17,25 +17,25 @@ var _listener2 = _interopRequireDefault(_listener);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function itIs(value) {
-  return function (subject) {
+  return function _itIs(subject) {
     return (0, _is2.default)(subject, value);
   };
 }
 
 function itIsNot(value) {
-  return function (subject) {
+  return function _itIsNot(subject) {
     return _is2.default.not(subject, value);
   };
 }
 
 function itIsA(type) {
-  return function (subject) {
+  return function _itIsA(subject) {
     return _is2.default.type(subject, type);
   };
 }
 
 function itIsNotA(value) {
-  return function (subject) {
+  return function _itIsNotA(subject) {
     return _is2.default.not.type(subject, value);
   };
 }
@@ -45,25 +45,19 @@ function emits(event) {
     checkers[_key - 1] = arguments[_key];
   }
 
-  return function () {
+  return function _emits() {
     return new _listener2.default(event, checkers);
   };
 }
 
 function doesNotEmit(event) {
-  return function () {
+  return function _doesNotEmit() {
     return new _listener2.default(event, [], true);
   };
 }
 
 var it = {
-  is: itIs,
-  emits: emits,
-  does: {
-    not: {
-      emit: doesNotEmit
-    }
-  }
+  is: itIs
 };
 
 it.is.true = itIs(true);
@@ -105,6 +99,8 @@ it.is.not.an.emitter = itIsNotA(_events.EventEmitter);
 it.is.not.a.promise = itIsNotA(Promise);
 it.is.not.a.date = itIsNotA(Date);
 it.is.not.a.regular = { expression: itIsNotA(RegExp) };
+
+it.is.emitting = emits;
 
 var defaultError = new Error('Default redtea error placeholder');
 
