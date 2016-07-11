@@ -1,6 +1,8 @@
 redtea
 ===
 
+Test framework for JavaScript.
+
 # Usage
 
 ```javascript
