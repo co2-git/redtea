@@ -156,6 +156,8 @@ describe.emitter(
 ```javascript
 type ASSERTIONS = {
   type?: TYPE,
+  mixed?: Array<TYPE>,
+  mixedArray?: Array<TYPE>,
   value?: any,
   has?: any,
   some?: (item: any, index: number, items: Array<any>) => boolean,
@@ -198,15 +200,18 @@ define('Is a foo', new Foo(), {type: Foo});
 
 // Arrays
 define('Array type', [1, 2, 3], {type: [Number]});
+```
 
-// Mixed arrays
-define('Array type', [1, 'a'], {type: [{mixed: [Number, String]}]});
+## `mixed: Array<TYPE>`
 
-// Mixed types
-define('Is a number or a string', '1', {type: {mixed: [String, Number]}});
+```javascript
+define('Is either number or string', 1, {mixed: [Number, String]});
+```
 
-// Maybe (type or else null)
-define('Is maybe a number, else is null', 1, {type: {mixed: [Number, null]}});
+## `mixedArray: Array<TYPE>`
+
+```javascript
+define('Items are either boolean or an array of numbers', [true, [1]], {mixedArray: [Boolean, [Number]]});
 ```
 
 ## `has: any`
