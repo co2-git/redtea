@@ -233,6 +233,10 @@ Check if properties exist.
 
 ```javascript
 define('Has foo: 1', {foo: 1, bar: 2}, {has: {foo: 1}});
+// property exists
+define('Has foo', {foo: 1, bar: 2}, {has: 'foo'});
+// properties exist
+define('Has foo and bar', {foo: 1, bar: 2}, {has: ['foo', 'bar']});
 ```
 
 ## `some: (item: any, index: number, items: Array<any>) => boolean`
