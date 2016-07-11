@@ -1,3 +1,4 @@
+#! /usr/bin/env node
 // @flow
 import 'babel-polyfill';
 import 'colors';
@@ -94,7 +95,8 @@ function run(...testers: Array<Function>) {
 }
 
 init()
-  .then(() => console.log())
+  .then(() => console.log('Tests finished'))
   .catch(error => {
-    throw error;
+    console.log(error.stack.yellow);
+    process.exit(1);
   });

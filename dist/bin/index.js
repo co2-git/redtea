@@ -1,3 +1,4 @@
+#! /usr/bin/env node
 'use strict';
 
 require('babel-polyfill');
@@ -168,7 +169,8 @@ function run() {
 }
 
 init().then(function () {
-  return console.log();
+  return console.log('Tests finished');
 }).catch(function (error) {
-  throw error;
+  console.log(error.stack.yellow);
+  process.exit(1);
 });
