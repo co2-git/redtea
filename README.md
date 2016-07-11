@@ -42,7 +42,7 @@ type DESCRIBE = (label: string, value: any, assertions: ASSERTIONS) => Function;
 ## Example
 
 ```javascript
-describe('Is a number', 10, {type: Number, value: 10});
+describe('Is a number and is equal to 10', 10, {type: Number, value: 10});
 ```
 
 # `batch`
