@@ -1,17 +1,58 @@
+// @flow
+import 'babel-polyfill';
 import 'colors';
-import path from 'path';
 import _ from 'lodash';
 import type from '../lib/type';
 import format from '../lib/format';
+import getFiles from '../lib/getFiles';
+import getFunctions from '../lib/getFunctions';
 
-const [,, file] = process.argv;
+const props = {};
+const flags = [];
+const files = [];
+
+// Process command line arguments
+process.argv
+  .filter((arg: string, index: number): boolean => index > 1)
+  .forEach((arg: string) => {
+    if (/\=/.test(arg)) {
+      const bits = arg.split('=');
+      props[bits[0]] = bits[1];
+    } else if (/^--/.test(arg)) {
+      flags.push(arg.replace(/^--/, ''));
+    } else {
+      files.push(arg);
+    }
+  });
 
 let tab = '';
 let tests = 0;
 let passed = 0;
 let failed = 0;
 
-function run(...testers) {
+function init(): Promise<null> {
+  return new Promise(async (resolve: Function, reject: Function) => {
+    try {
+      const _files = await getFiles(...files);
+      const functions = getFunctions(_files);
+
+      run(...functions);
+
+      console.log();
+      console.log(`${tests} tests, ${passed} passed, ${failed} failed`);
+      console.log();
+
+      if (failed) {
+        reject(new Error('Tests are failing'));
+      }
+      resolve();
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+function run(...testers: Array<Function>) {
   tab += '  ';
   for (const tester of testers) {
     const result = tester();
@@ -52,14 +93,8 @@ function run(...testers) {
   tab = tab.replace(/ {2}$/, '');
 }
 
-const test = require(path.join(process.cwd(), file)).default;
-
-run(test);
-
-console.log();
-console.log(`${tests} tests, ${passed} passed, ${failed} failed`);
-console.log();
-
-if (failed) {
-  throw new Error('Tests are failing');
-}
+init()
+  .then(() => console.log())
+  .catch(error => {
+    throw error;
+  });

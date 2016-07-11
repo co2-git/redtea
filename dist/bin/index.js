@@ -1,128 +1,34 @@
-#!/usr/bin/env node
 'use strict';
-
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 require('babel-polyfill');
 
-var _colors = require('colors');
-
-var _colors2 = _interopRequireDefault(_colors);
+require('colors');
 
 var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
-var _promiseSequencer = require('promise-sequencer');
+var _type = require('../lib/type');
 
-var _promiseSequencer2 = _interopRequireDefault(_promiseSequencer);
+var _type2 = _interopRequireDefault(_type);
 
 var _format = require('../lib/format');
 
 var _format2 = _interopRequireDefault(_format);
 
-var _fetch = require('../lib/fetch');
+var _getFiles = require('../lib/getFiles');
 
-var _fetch2 = _interopRequireDefault(_fetch);
+var _getFiles2 = _interopRequireDefault(_getFiles);
 
-var _package = require('../../package.json');
+var _getFunctions = require('../lib/getFunctions');
 
-var _package2 = _interopRequireDefault(_package);
-
-var _is = require('../lib/is');
+var _getFunctions2 = _interopRequireDefault(_getFunctions);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-function overthrow(error) {
-  console.log(_colors2.default.yellow(error.stack));
-  process.exit(8);
-}
-
-// For Unix use: pkill redtea
-process.title = 'redtea';
-
-console.log(_colors2.default.red.bold('redtea v' + _package2.default.version));
-
-// the test
-var over = false;
-
-process.on('exit', function () {
-  if (!over) {
-    var margin = pad(' ', 16);
-    console.log('  ', _colors2.default.bgRed(pad(' ', 52)));
-    console.log('  ', _colors2.default.bgRed.bold(margin + 'TEST FAILED   (EXIT)' + margin));
-    console.log('  ', _colors2.default.bgRed(pad(' ', 52)));
-  }
-});
-
-var tests = 0;
-var passed = 0;
-var failed = 0;
-var done = 0;
-var skipped = 0;
-var tab = '';
-
-function runAll() {
-  for (var _len = arguments.length, functions = Array(_len), _key = 0; _key < _len; _key++) {
-    functions[_key] = arguments[_key];
-  }
-
-  var cursor = 0;
-  function runOne() {
-    if (functions[cursor]) {
-      functions[cursor]().on('batch', function (label) {
-        console.log(tab, _colors2.default.bgBlue(label));
-        tab += '  ';
-      }).on('describe', function (subject, options) {
-        var label = void 0;
-        var as = _lodash2.default.find(options, 'as');
-        if (as) {
-          label = as.as;
-        } else {
-          label = (0, _format2.default)(subject);
-        }
-        console.log(tab, label);
-      }).on('passed', function (passedResult) {
-        tests++;
-        passed++;
-        console.log(tab, '  ', _colors2.default.green.bold('√'), _colors2.default.grey('is' + passedResult.label.split('is')[1]));
-      }).on('failed', function (failedResult) {
-        tests++;
-        failed++;
-        console.log(tab, '  ', _colors2.default.red.bold('×'), _colors2.default.red('is' + failedResult.label.split('is')[1]));
-      }).on('_done', function () {
-        // tab = tab.replace(/\s{2}$/, '');
-      }).on('done', function () {
-        tab = tab.replace(/\s\s$/, '');
-        cursor++;
-        runOne();
-      });
-    } else {
-      over = true;
-      console.log({ tests: tests, done: done, skipped: skipped, passed: passed, failed: failed });
-
-      if (tests === passed) {
-        console.log('  ', _colors2.default.bgGreen(pad(' ', 52)));
-        console.log('  ', _colors2.default.white.bgGreen.bold(pad(' ', 17), 'ALL TESTS PASSED', pad(' ', 17)));
-        console.log('  ', _colors2.default.bgGreen(pad(' ', 52)));
-      } else {
-        console.log(_colors2.default.bgRed(pad(' ', 52)));
-        console.log('  ', _colors2.default.white.bgRed.bold(pad(' ', 17), failed + ' TEST FAILED', pad(' ', 17)));
-        console.log(_colors2.default.bgRed(pad(' ', 52)));
-      }
-    }
-  }
-
-  runOne();
-}
-
-function pad(character, times) {
-  return _lodash2.default.range(times).map(function () {
-    return character;
-  }).join('');
-}
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { return step("next", value); }, function (err) { return step("throw", err); }); } } return step("next"); }); }; }
 
 var props = {};
 var flags = [];
@@ -142,20 +48,127 @@ process.argv.filter(function (arg, index) {
   }
 });
 
-(0, _promiseSequencer2.default)(function () {
-  return _fetch2.default.getFiles.apply(_fetch2.default, files);
-}, function (_files) {
-  return _fetch2.default.getFunctions(_files, props, flags);
-}).then(function (results) {
-  try {
-    var _results = _slicedToArray(results, 2);
+var tab = '';
+var tests = 0;
+var passed = 0;
+var failed = 0;
 
-    var functions = _results[1];
+function init() {
+  var _this = this;
 
-    runAll.apply(undefined, _toConsumableArray(functions));
-  } catch (error) {
-    overthrow(error);
+  return new Promise(function () {
+    var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee(resolve, reject) {
+      var _files, functions;
+
+      return regeneratorRuntime.wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              _context.prev = 0;
+              _context.next = 3;
+              return _getFiles2.default.apply(undefined, files);
+
+            case 3:
+              _files = _context.sent;
+              functions = (0, _getFunctions2.default)(_files);
+
+
+              run.apply(undefined, _toConsumableArray(functions));
+
+              console.log();
+              console.log(tests + ' tests, ' + passed + ' passed, ' + failed + ' failed');
+              console.log();
+
+              if (failed) {
+                reject(new Error('Tests are failing'));
+              }
+              resolve();
+              _context.next = 16;
+              break;
+
+            case 13:
+              _context.prev = 13;
+              _context.t0 = _context['catch'](0);
+
+              reject(_context.t0);
+
+            case 16:
+            case 'end':
+              return _context.stop();
+          }
+        }
+      }, _callee, _this, [[0, 13]]);
+    }));
+
+    return function (_x, _x2) {
+      return ref.apply(this, arguments);
+    };
+  }());
+}
+
+function run() {
+  tab += '  ';
+
+  for (var _len = arguments.length, testers = Array(_len), _key = 0; _key < _len; _key++) {
+    testers[_key] = arguments[_key];
   }
+
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = testers[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var tester = _step.value;
+
+      var result = tester();
+      if (result.constructor.name === 'Batch') {
+        console.log(tab.black, result.label.underline);
+        run.apply(undefined, _toConsumableArray(result.tests));
+      } else if (result.constructor.name === 'Describe') {
+        console.log(tab.black, result.label.italic, (0, _format2.default)(result.that).grey);
+        for (var attr in result.assert) {
+          if (attr === 'value') {
+            tests++;
+            if (_lodash2.default.isEqual(result.that, result.assert.value)) {
+              passed++;
+              console.log((tab + '  ').black, '√ Value matches'.green);
+            } else {
+              failed++;
+              console.log((tab + '  ').black, '✖ Value does not match'.bold.red);
+              console.log((tab + '  ').black, ('Expected value <' + (0, _format2.default)(result.that) + '> to match ' + ('<' + (0, _format2.default)(result.assert.value) + '>')).yellow);
+            }
+          } else if (attr === 'type') {
+            tests++;
+            if ((0, _type2.default)(result.that, result.type)) {
+              passed++;
+              console.log(tab + '    ', '√');
+            }
+          }
+        }
+      }
+      console.log();
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator.return) {
+        _iterator.return();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+
+  tab = tab.replace(/ {2}$/, '');
+}
+
+init().then(function () {
+  return console.log();
 }).catch(function (error) {
-  overthrow(error);
+  throw error;
 });
