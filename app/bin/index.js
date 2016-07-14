@@ -125,7 +125,7 @@ function __describe(result) {
     result.label.italic,
     colors.grey(format(result.that)),
   );
-  walk(result.that, result.assertions);
+  walk(result.that, result.assertions || result.assert);
 }
 
 function __promise(result): Promise<void> {

@@ -217,7 +217,7 @@ function walk(that, assertions) {
 
 function __describe(result) {
   console.log(_colors2.default.black(tab), result.label.italic, _colors2.default.grey((0, _format2.default)(result.that)));
-  walk(result.that, result.assertions);
+  walk(result.that, result.assertions || result.assert);
 }
 
 function __promise(result) {
