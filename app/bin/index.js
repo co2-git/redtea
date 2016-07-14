@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 // @flow
 import 'babel-polyfill';
-import 'colors';
+import colors from 'colors';
 import _ from 'lodash';
 import type from '../lib/type';
 import format from '../lib/format';
@@ -31,13 +31,13 @@ let tests = 0;
 let passed = 0;
 let failed = 0;
 
-function init(): Promise<null> {
+async function init(): Promise<null> {
   return new Promise(async (resolve: Function, reject: Function) => {
     try {
       const _files = await getFiles(...files);
       const functions = getFunctions(_files);
 
-      run(...functions);
+      await run(...functions);
 
       console.log();
       console.log(`${tests} tests, ${passed} passed, ${failed} failed`);
@@ -53,45 +53,117 @@ function init(): Promise<null> {
   });
 }
 
-function run(...testers: Array<Function>) {
-  tab += '  ';
-  for (const tester of testers) {
-    const result = tester();
-    if (result.constructor.name === 'Batch') {
-      console.log(tab.black, result.label.underline);
-      run(...result.tests);
-    } else if (result.constructor.name === 'Describe') {
-      console.log(
-        tab.black,
-        result.label.italic,
-        format(result.that).grey
-      );
-      for (const attr in result.assert) {
-        if (attr === 'value') {
-          tests++;
-          if (_.isEqual(result.that, result.assert.value)) {
-            passed++;
-            console.log(`${tab}  `.black, '√ Value matches'.green);
-          } else {
-            failed++;
-            console.log(`${tab}  `.black, '✖ Value does not match'.bold.red);
-            console.log(`${tab}  `.black,
-              (`Expected value <${format(result.that)}> to match ` +
-                `<${format(result.assert.value)}>`).yellow
-            );
-          }
-        } else if (attr === 'type') {
-          tests++;
-          if (type(result.that, result.type)) {
-            passed++;
-            console.log(`${tab}    `, '√');
-          }
-        }
-      }
+function __batch(result): Promise<void> {
+  return new Promise(async (resolve, reject) => {
+    try {
+      console.log(colors.black(tab), result.label.underline);
+      await run(...result.tests);
+      resolve();
+    } catch (error) {
+      reject(error);
     }
-    console.log();
+  });
+}
+
+function walk(that, assertions, not = false) {
+  if (('value') in assertions) {
+    tests++;
+    const isEqual = _.isEqual(that, assertions.value);
+    const valid = not ? !isEqual : isEqual;
+    if (valid) {
+      passed++;
+      console.log(
+        colors.black(`${tab}  `),
+        colors.green('√ Value is', format(assertions.value))
+      );
+    } else {
+      failed++;
+      console.log(
+        colors.black(`${tab}  `),
+        colors.bold.red('✖ Value does not match'),
+      );
+      console.log(colors.black(`${tab}  `), colors.yellow(
+        (`Expected value <${format(that)}> to match ` +
+          `<${format(assertions.value)}>`)
+      ));
+    }
   }
-  tab = tab.replace(/ {2}$/, '');
+
+  if (('type' in assertions)) {
+    tests++;
+    const isType = type(that, type);
+    const valid = not ? !isType : isType;
+    if (valid) {
+      passed++;
+      console.log(
+        `${tab}    `,
+        not ?
+          colors.green('√ Type is not', format(assertions.type)) :
+          colors.green('√ Type matches', format(assertions.type)),
+      );
+    } else {
+      failed++;
+      console.log(
+        colors.black(`${tab}  `),
+        colors.bold.red('✖ Type does not match'),
+      );
+      console.log(colors.black(`${tab}  `), colors.yellow(
+        (`Expected type <${format(that.constructor)}> to match ` +
+          `<${format(assertions.type)}>`)
+      ));
+    }
+  }
+
+  if (('not' in assertions)) {
+    walk(that, assertions.not, true);
+  }
+}
+
+function __describe(result) {
+  console.log(
+    colors.black(tab),
+    result.label.italic,
+    colors.grey(format(result.that)),
+  );
+  walk(result.that, result.assertions);
+}
+
+function __promise(result): Promise<void> {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const that = await result.promise();
+      __describe({
+        ...result,
+        that,
+      });
+      resolve();
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+function run(...testers: Array<Function>): Promise<void> {
+  return new Promise(async (resolve, reject) => {
+    try {
+      tab += '  ';
+      for (const tester of testers) {
+        const result = tester();
+        if (result.constructor.name === 'Batch') {
+          await __batch(result);
+        } else if (result.constructor.name === 'Describe') {
+          __describe(result);
+        } else if (result.constructor.name === '_Promise') {
+          await __promise(result);
+        }
+        console.log();
+      }
+      tab = tab.replace(/ {2}$/, '');
+      resolve();
+    } catch (error) {
+      reject(error);
+    }
+  });
 }
 
 init()

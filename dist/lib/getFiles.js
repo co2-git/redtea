@@ -3,6 +3,19 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+var _regenerator = require('babel-runtime/regenerator');
+
+var _regenerator2 = _interopRequireDefault(_regenerator);
+
+var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
+
+var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
+
+var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
+
+var _toConsumableArray3 = _interopRequireDefault(_toConsumableArray2);
+
 exports.default = getFiles;
 
 var _path = require('path');
@@ -19,14 +32,10 @@ var _promiseSequencer2 = _interopRequireDefault(_promiseSequencer);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { return step("next", value); }, function (err) { return step("throw", err); }); } } return step("next"); }); }; }
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
 function flattenArray(arr) {
   return arr.reduce(function (reduced, item) {
     if (Array.isArray(item)) {
-      reduced.push.apply(reduced, _toConsumableArray(flattenArray(item)));
+      reduced.push.apply(reduced, (0, _toConsumableArray3.default)(flattenArray(item)));
     } else {
       reduced.push(item);
     }
@@ -51,10 +60,10 @@ function getFile(file) {
   var _this = this;
 
   return new Promise(function () {
-    var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee(resolve, reject) {
+    var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee(resolve, reject) {
       var is_absolute, absolute, formatted_file, stat, files, _files;
 
-      return regeneratorRuntime.wrap(function _callee$(_context) {
+      return _regenerator2.default.wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
@@ -79,7 +88,7 @@ function getFile(file) {
             case 10:
               files = _context.sent;
               _context.next = 13;
-              return getFiles.apply(undefined, _toConsumableArray(files));
+              return getFiles.apply(undefined, (0, _toConsumableArray3.default)(files));
 
             case 13:
               _files = _context.sent;
@@ -111,7 +120,7 @@ function getFile(file) {
     }));
 
     return function (_x, _x2) {
-      return ref.apply(this, arguments);
+      return _ref.apply(this, arguments);
     };
   }());
 }
@@ -124,10 +133,10 @@ function getFiles() {
   }
 
   return new Promise(function () {
-    var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee2(resolve, reject) {
+    var _ref2 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee2(resolve, reject) {
       var results, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, file, result;
 
-      return regeneratorRuntime.wrap(function _callee2$(_context2) {
+      return _regenerator2.default.wrap(function _callee2$(_context2) {
         while (1) {
           switch (_context2.prev = _context2.next) {
             case 0:
@@ -219,7 +228,7 @@ function getFiles() {
     }));
 
     return function (_x3, _x4) {
-      return ref.apply(this, arguments);
+      return _ref2.apply(this, arguments);
     };
   }());
 }
