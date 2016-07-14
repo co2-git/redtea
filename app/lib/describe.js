@@ -17,19 +17,3 @@ export default function describe(
   ): Function {
   return (): Describe => new Describe(label, that, assert);
 }
-
-class Batch {
-  label: string;
-  tests: Array<any>;
-  constructor(label: string, ...tests: Array<any>) {
-    this.label = label;
-    this.tests = tests;
-  }
-}
-
-describe.batch = function batch(
-    label: string,
-    ...tests: Array<Function>
-  ): Function {
-  return (): Batch => new Batch(label, ...tests);
-};

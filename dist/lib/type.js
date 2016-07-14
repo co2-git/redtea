@@ -4,9 +4,14 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+var _typeof2 = require('babel-runtime/helpers/typeof');
+
+var _typeof3 = _interopRequireDefault(_typeof2);
 
 exports.default = type;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function type(it, type) {
   var not = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
 
@@ -34,7 +39,7 @@ function type(it, type) {
       break;
     case Object:
       {
-        passed = it && (typeof it === 'undefined' ? 'undefined' : _typeof(it)) === 'object' && !Array.isArray(it);
+        passed = it && (typeof it === 'undefined' ? 'undefined' : (0, _typeof3.default)(it)) === 'object' && !Array.isArray(it);
         break;
       }
     case Array:

@@ -231,7 +231,7 @@
         "never"
     ],
     "flowtype/type-id-match": [
-        1,
+        0,
         "^([A-Z][a-z0-9]+)+Type$"
     ]
   },
