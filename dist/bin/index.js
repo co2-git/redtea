@@ -179,39 +179,52 @@ function __batch(result) {
   }());
 }
 
+function __eval(that, expected, not, test, okLabel, koLabel, _tab) {
+  tests++;
+  var valid = not ? !test : test;
+  if (valid) {
+    passed++;
+    console.log(_tab + '    ', not ? _colors2.default.green('√ ' + koLabel, (0, _format2.default)(expected)) : _colors2.default.green('√ ' + okLabel, (0, _format2.default)(expected)));
+  } else {
+    failed++;
+    console.log(_colors2.default.black(_tab + '  '), not ? _colors2.default.bold.red('✖ ' + koLabel, (0, _format2.default)(expected)) : _colors2.default.bold.red('✖ ' + okLabel, (0, _format2.default)(expected)));
+  }
+}
+
 function walk(that, assertions) {
   var not = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
 
   if ('value' in assertions) {
-    tests++;
-    var isEqual = _lodash2.default.isEqual(that, assertions.value);
-    var valid = not ? !isEqual : isEqual;
-    if (valid) {
-      passed++;
-      console.log(_colors2.default.black(tab + '  '), _colors2.default.green('√ Value is', (0, _format2.default)(assertions.value)));
-    } else {
-      failed++;
-      console.log(_colors2.default.black(tab + '  '), _colors2.default.bold.red('✖ Value does not match'));
-      console.log(_colors2.default.black(tab + '  '), _colors2.default.yellow('Expected value <' + (0, _format2.default)(that) + '> to match ' + ('<' + (0, _format2.default)(assertions.value) + '>')));
-    }
+    __eval(that, assertions.value, not, _lodash2.default.isEqual(that, assertions.value), 'Value is', 'Value is not', tab);
   }
 
   if ('type' in assertions) {
-    tests++;
-    var isType = (0, _type2.default)(that, _type2.default);
-    var _valid = not ? !isType : isType;
-    if (_valid) {
-      passed++;
-      console.log(tab + '    ', not ? _colors2.default.green('√ Type is not', (0, _format2.default)(assertions.type)) : _colors2.default.green('√ Type matches', (0, _format2.default)(assertions.type)));
-    } else {
-      failed++;
-      console.log(_colors2.default.black(tab + '  '), _colors2.default.bold.red('✖ Type does not match'));
-      console.log(_colors2.default.black(tab + '  '), _colors2.default.yellow('Expected type <' + (0, _format2.default)(that.constructor) + '> to match ' + ('<' + (0, _format2.default)(assertions.type) + '>')));
-    }
+    __eval(that, assertions.type, not, (0, _type2.default)(that, assertions.type), 'Type is', 'Type is not', tab);
   }
 
   if ('not' in assertions) {
     walk(that, assertions.not, true);
+  }
+
+  if ('has' in assertions) {
+    if (assertions.has instanceof RegExp || _lodash2.default.isString(that)) {
+      var regex = assertions.has instanceof RegExp ? assertions.has : new RegExp(assertions.has);
+      __eval(that, assertions.has, not, regex.test(that), 'String matches', 'String does not match', tab);
+    } else if (_lodash2.default.isArray(that)) {
+      __eval(that, assertions.has, not, _lodash2.default.some(that, function (item) {
+        return _lodash2.default.isEqual(item, assertions.has);
+      }), 'Array includes', 'Array does not include', tab);
+    } else if (_lodash2.default.isObject(that)) {
+      if (_lodash2.default.isString(assertions.has)) {
+        __eval(that, assertions.has, not, _lodash2.default.has(that, assertions.has), 'Object has property(ies)', 'Object does not have property(ies)', tab);
+      } else if (_lodash2.default.isArray(assertions.has)) {
+        __eval(that, assertions.has, not, _lodash2.default.every(assertions.has, function (prop) {
+          return _lodash2.default.matches(that, prop);
+        }), 'Object matches', 'Object does not match', tab);
+      } else if (_lodash2.default.isObject(assertions.has)) {
+        __eval(that, assertions.has, not, _lodash2.default.matches(that, assertions.has), 'Object matches', 'Object does not match', tab);
+      }
+    }
   }
 }
 
