@@ -65,57 +65,121 @@ function __batch(result): Promise<void> {
   });
 }
 
+function __eval(
+    that: any,
+    expected: any,
+    not: boolean,
+    test: boolean,
+    okLabel: string,
+    koLabel: string,
+    _tab: string
+  ) {
+  tests++;
+  const valid = not ? !test : test;
+  if (valid) {
+    passed++;
+    console.log(
+      `${_tab}    `,
+      not ?
+        colors.green(`√ ${koLabel}`, format(expected)) :
+        colors.green(`√ ${okLabel}`, format(expected)),
+    );
+  } else {
+    failed++;
+    console.log(
+      colors.black(`${_tab}  `),
+      not ?
+      colors.bold.red(`✖ ${koLabel}`, format(expected)) :
+      colors.bold.red(`✖ ${okLabel}`, format(expected)),
+    );
+  }
+}
+
 function walk(that, assertions, not = false) {
   if (('value') in assertions) {
-    tests++;
-    const isEqual = _.isEqual(that, assertions.value);
-    const valid = not ? !isEqual : isEqual;
-    if (valid) {
-      passed++;
-      console.log(
-        colors.black(`${tab}  `),
-        colors.green('√ Value is', format(assertions.value))
-      );
-    } else {
-      failed++;
-      console.log(
-        colors.black(`${tab}  `),
-        colors.bold.red('✖ Value does not match'),
-      );
-      console.log(colors.black(`${tab}  `), colors.yellow(
-        (`Expected value <${format(that)}> to match ` +
-          `<${format(assertions.value)}>`)
-      ));
-    }
+    __eval(
+      that,
+      assertions.value,
+      not,
+      _.isEqual(that, assertions.value),
+      'Value is',
+      'Value is not',
+      tab,
+    );
   }
 
   if (('type' in assertions)) {
-    tests++;
-    const isType = type(that, type);
-    const valid = not ? !isType : isType;
-    if (valid) {
-      passed++;
-      console.log(
-        `${tab}    `,
-        not ?
-          colors.green('√ Type is not', format(assertions.type)) :
-          colors.green('√ Type matches', format(assertions.type)),
-      );
-    } else {
-      failed++;
-      console.log(
-        colors.black(`${tab}  `),
-        colors.bold.red('✖ Type does not match'),
-      );
-      console.log(colors.black(`${tab}  `), colors.yellow(
-        (`Expected type <${format(that.constructor)}> to match ` +
-          `<${format(assertions.type)}>`)
-      ));
-    }
+    __eval(
+      that,
+      assertions.type,
+      not,
+      type(that, assertions.type),
+      'Type is',
+      'Type is not',
+      tab,
+    );
   }
 
   if (('not' in assertions)) {
     walk(that, assertions.not, true);
+  }
+
+  if (('has' in assertions)) {
+    if (assertions.has instanceof RegExp || _.isString(that)) {
+      const regex = assertions.has instanceof RegExp ?
+        assertions.has : new RegExp(assertions.has);
+      __eval(
+        that,
+        assertions.has,
+        not,
+        regex.test(that),
+        'String matches',
+        'String does not match',
+        tab,
+      );
+    } else if (_.isArray(that)) {
+      __eval(
+        that,
+        assertions.has,
+        not,
+        _.some(that, (item) => _.isEqual(item, assertions.has)),
+        'Array includes',
+        'Array does not include',
+        tab,
+      );
+    } else if (_.isObject(that)) {
+      if (_.isString(assertions.has)) {
+        __eval(
+          that,
+          assertions.has,
+          not,
+          _.has(that, assertions.has),
+          'Object has property(ies)',
+          'Object does not have property(ies)',
+          tab,
+        );
+      } else if (_.isArray(assertions.has)) {
+        __eval(
+          that,
+          assertions.has,
+          not,
+          _.every(assertions.has, prop => _.matches(that, prop)),
+          'Object matches',
+          'Object does not match',
+          tab,
+        );
+      } else if (_.isObject(assertions.has)) {
+        __eval(
+          that,
+          assertions.has,
+          not,
+          _.matches(that, assertions.has),
+          'Object matches',
+          'Object does not match',
+          tab,
+        );
+      }
+    }
   }
 }
 
