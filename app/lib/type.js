@@ -2,11 +2,15 @@
 
 export default function type(
     it: any,
-    type: ?Function,
+    _type: null | Function | Function[],
     not : boolean = false
   ): boolean {
+  if (Array.isArray(_type) && _type.length) {
+    const [arrayType] = _type;
+    return it.every((_it: any): boolean => type(_it, arrayType, not));
+  }
   let passed;
-  switch (type) {
+  switch (_type) {
   case null:
     return it === null;
   case String:
@@ -36,7 +40,7 @@ export default function type(
     passed = Array.isArray(it);
     break;
   default:
-    passed = Boolean(it instanceof type);
+    passed = Boolean(it instanceof _type);
     break;
   }
   if (not) {

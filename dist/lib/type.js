@@ -8,15 +8,34 @@ var _typeof2 = require('babel-runtime/helpers/typeof');
 
 var _typeof3 = _interopRequireDefault(_typeof2);
 
+var _slicedToArray2 = require('babel-runtime/helpers/slicedToArray');
+
+var _slicedToArray3 = _interopRequireDefault(_slicedToArray2);
+
 exports.default = type;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function type(it, type) {
+function type(it, _type) {
   var not = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
 
+  if (Array.isArray(_type) && _type.length) {
+    var _ret = function () {
+      var _type2 = (0, _slicedToArray3.default)(_type, 1);
+
+      var arrayType = _type2[0];
+
+      return {
+        v: it.every(function (_it) {
+          return type(_it, arrayType, not);
+        })
+      };
+    }();
+
+    if ((typeof _ret === 'undefined' ? 'undefined' : (0, _typeof3.default)(_ret)) === "object") return _ret.v;
+  }
   var passed = void 0;
-  switch (type) {
+  switch (_type) {
     case null:
       return it === null;
     case String:
@@ -46,7 +65,7 @@ function type(it, type) {
       passed = Array.isArray(it);
       break;
     default:
-      passed = Boolean(it instanceof type);
+      passed = Boolean(it instanceof _type);
       break;
   }
   if (not) {
