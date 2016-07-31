@@ -1,12 +1,12 @@
 {
   "name": "redtea",
-  "version": "5.0.4",
+  "version": "5.0.5",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
     "babel": "babel --out-dir dist app",
     "babel-watch": "babel --watch --out-dir dist app",
-    "test": "node dist/bin/index.js dist/test"
+    "test": "node dist/test.js"
   },
   "bin": {
     "redtea": "dist/bin/index.js"

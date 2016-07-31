@@ -1,9 +1,7 @@
 // @flow
 import path from 'path';
 
-export default function getFunctions(
-    files: Array<string>,
-  ): Array<Function> {
+export default function getFunctions(files: string[]): Function[] {
   return files.map((file: string): Function => {
     let absoluteFile;
 
@@ -20,7 +18,7 @@ export default function getFunctions(
     }
 
     if (typeof fn !== 'function') {
-      throw new Error('You need to expose a function');
+      throw new Error('You need to expose a function in file ' + file);
     }
     return fn;
   });

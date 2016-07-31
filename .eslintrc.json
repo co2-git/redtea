@@ -43,7 +43,7 @@
       2,
       "smart"
     ],
-    "guard-for-in": 1,
+    "guard-for-in": 0,
     "handle-callback-err": [
       2,
       "^(err|error)$"
@@ -119,7 +119,7 @@
     "no-multiple-empty-lines": 1,
     "no-negated-in-lhs": 2,
     "no-nested-ternary": 2,
-    "no-new": 2,
+    "no-new": 0,
     "no-new-func": 2,
     "no-new-object": 2,
     "no-new-wrappers": 2,

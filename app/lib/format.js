@@ -1,4 +1,5 @@
 // @flow
+import {EventEmitter} from 'events';
 
 export default function format(value: any): string {
   const type = typeof value;
@@ -37,6 +38,16 @@ export default function format(value: any): string {
     return 'array [Circular]';
   }
   if (type === 'object') {
+    if (value instanceof EventEmitter) {
+      return `emitter ${value.constructor.name} (${value._eventsCount} listeners)`;
+    }
+    if (value instanceof Error) {
+      const stack = value.stack.split(/\n/).filter(line => line);
+      return `Error ${value.message} ${stack[1]} ${stack[2]} ${stack[3]}...`;
+    }
+    if (value instanceof Promise) {
+      return 'Promise';
+    }
     if (value.constructor === Object) {
       if (parsable) {
         if (json.length > 70) {

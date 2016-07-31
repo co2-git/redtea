@@ -28,7 +28,7 @@ function getFunctions(files) {
     }
 
     if (typeof fn !== 'function') {
-      throw new Error('You need to expose a function');
+      throw new Error('You need to expose a function in file ' + file);
     }
     return fn;
   });

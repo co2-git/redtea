@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.Redtea_Batch = undefined;
 
 var _classCallCheck2 = require("babel-runtime/helpers/classCallCheck");
 
@@ -12,8 +13,8 @@ exports.default = batch;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var Batch = function Batch(label) {
-  (0, _classCallCheck3.default)(this, Batch);
+var Redtea_Batch = exports.Redtea_Batch = function Redtea_Batch(label) {
+  (0, _classCallCheck3.default)(this, Redtea_Batch);
 
   this.label = label;
 
@@ -30,6 +31,6 @@ function batch(label) {
   }
 
   return function () {
-    return new (Function.prototype.bind.apply(Batch, [null].concat([label], tests)))();
+    return new (Function.prototype.bind.apply(Redtea_Batch, [null].concat([label], tests)))();
   };
 }

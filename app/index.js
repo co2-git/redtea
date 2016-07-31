@@ -1,10 +1,5 @@
-import describe from './lib/describe';
-import batch from './lib/batch';
-import promise from './lib/promise';
-
-describe.batch = batch;
-describe.promise = promise;
-
-export default describe;
-
-export {batch, promise};
+// @flow
+export {default as default} from './lib/describe/litteral';
+export {default as batch} from './lib/batch/litteral';
+export {default as promise} from './lib/promise/litteral';
+export {default as emitter} from './lib/emitter/litteral';

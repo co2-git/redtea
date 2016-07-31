@@ -3,25 +3,41 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.promise = exports.batch = undefined;
 
-var _describe = require('./lib/describe');
+var _litteral = require('./lib/describe/litteral');
 
-var _describe2 = _interopRequireDefault(_describe);
+Object.defineProperty(exports, 'default', {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_litteral).default;
+  }
+});
 
-var _batch = require('./lib/batch');
+var _litteral2 = require('./lib/batch/litteral');
 
-var _batch2 = _interopRequireDefault(_batch);
+Object.defineProperty(exports, 'batch', {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_litteral2).default;
+  }
+});
 
-var _promise = require('./lib/promise');
+var _litteral3 = require('./lib/promise/litteral');
 
-var _promise2 = _interopRequireDefault(_promise);
+Object.defineProperty(exports, 'promise', {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_litteral3).default;
+  }
+});
+
+var _litteral4 = require('./lib/emitter/litteral');
+
+Object.defineProperty(exports, 'emitter', {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_litteral4).default;
+  }
+});
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-_describe2.default.batch = _batch2.default;
-_describe2.default.promise = _promise2.default;
-
-exports.default = _describe2.default;
-exports.batch = _batch2.default;
-exports.promise = _promise2.default;

@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.Redtea_Describe = undefined;
 
 var _classCallCheck2 = require("babel-runtime/helpers/classCallCheck");
 
@@ -12,8 +13,8 @@ exports.default = describe;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var Describe = function Describe(label, that, assert) {
-  (0, _classCallCheck3.default)(this, Describe);
+var Redtea_Describe = exports.Redtea_Describe = function Redtea_Describe(label, that, assert) {
+  (0, _classCallCheck3.default)(this, Redtea_Describe);
 
   this.label = label;
   this.that = that;
@@ -22,6 +23,6 @@ var Describe = function Describe(label, that, assert) {
 
 function describe(label, that, assert) {
   return function () {
-    return new Describe(label, that, assert);
+    return new Redtea_Describe(label, that, assert);
   };
 }

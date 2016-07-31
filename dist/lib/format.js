@@ -10,6 +10,8 @@ var _typeof3 = _interopRequireDefault(_typeof2);
 
 exports.default = format;
 
+var _events = require('events');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function format(value) {
@@ -49,6 +51,18 @@ function format(value) {
     return 'array [Circular]';
   }
   if (type === 'object') {
+    if (value instanceof _events.EventEmitter) {
+      return 'emitter ' + value.constructor.name + ' (' + value._eventsCount + ' listeners)';
+    }
+    if (value instanceof Error) {
+      var stack = value.stack.split(/\n/).filter(function (line) {
+        return line;
+      });
+      return 'Error ' + value.message + ' ' + stack[1] + ' ' + stack[2] + ' ' + stack[3] + '...';
+    }
+    if (value instanceof Promise) {
+      return 'Promise';
+    }
     if (value.constructor === Object) {
       if (parsable) {
         if (json.length > 70) {

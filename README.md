@@ -156,10 +156,12 @@ describe.emitter(
 ```javascript
 type ASSERTIONS = {
   type?: TYPE,
-  mixed?: Array<TYPE>,
-  mixedArray?: Array<TYPE>,
+  types?: TYPE[],
+  mixed?: TYPE[],
+  mixedArray?: TYPE[],
   value?: any,
   has?: any,
+  shape?: Object,
   some?: (item: any, index: number, items: Array<any>) => boolean,
   every?: (item: any, index: number, items: Array<any>) => boolean,
   above: number | Date,

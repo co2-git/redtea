@@ -1,25 +1,25 @@
 // @flow
 import type {ASSERTIONS} from '../config/types';
 
-class _Promise {
+export class Redtea_Promise {
   label: string;
-  promise: Promise<*> | () => Promise<*>;
+  that: () => Promise<*>;
   assertions: ASSERTIONS = {};
   constructor(
       label: string,
-      _promise: Promise<*> | () => Promise<*>,
+      that: () => Promise<*>,
       assertions: ASSERTIONS
     ) {
     this.label = label;
-    this.promise = _promise;
+    this.that = that;
     this.assertions = assertions;
   }
 }
 
 export default function promise(
     label: string,
-    _promise: Promise<*> | () => Promise<*>,
+    that: () => Promise<*>,
     assertions: ASSERTIONS
   ): Function {
-  return (): _Promise => new _Promise(label, _promise, assertions);
+  return (): Redtea_Promise => new Redtea_Promise(label, that, assertions);
 }

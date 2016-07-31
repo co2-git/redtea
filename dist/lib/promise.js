@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.Redtea_Promise = undefined;
 
 var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
 
@@ -12,17 +13,17 @@ exports.default = promise;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var _Promise = function _Promise(label, _promise, assertions) {
-  (0, _classCallCheck3.default)(this, _Promise);
+var Redtea_Promise = exports.Redtea_Promise = function Redtea_Promise(label, that, assertions) {
+  (0, _classCallCheck3.default)(this, Redtea_Promise);
   this.assertions = {};
 
   this.label = label;
-  this.promise = _promise;
+  this.that = that;
   this.assertions = assertions;
 };
 
-function promise(label, _promise, assertions) {
+function promise(label, that, assertions) {
   return function () {
-    return new _Promise(label, _promise, assertions);
+    return new Redtea_Promise(label, that, assertions);
   };
 }
