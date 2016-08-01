@@ -52,13 +52,10 @@ function format(value) {
   }
   if (type === 'object') {
     if (value instanceof _events.EventEmitter) {
-      return 'emitter ' + value.constructor.name + ' (' + value._eventsCount + ' listeners)';
+      return 'emitter ' + value.constructor.name + ' ' + ('(' + value._eventsCount + ' listeners)');
     }
     if (value instanceof Error) {
-      var stack = value.stack.split(/\n/).filter(function (line) {
-        return line;
-      });
-      return 'Error ' + value.message + ' ' + stack[1] + ' ' + stack[2] + ' ' + stack[3] + '...';
+      return 'Error ' + value.message;
     }
     if (value instanceof Promise) {
       return 'Promise';

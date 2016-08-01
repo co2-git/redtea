@@ -39,11 +39,11 @@ export default function format(value: any): string {
   }
   if (type === 'object') {
     if (value instanceof EventEmitter) {
-      return `emitter ${value.constructor.name} (${value._eventsCount} listeners)`;
+      return `emitter ${value.constructor.name} ` +
+        `(${value._eventsCount} listeners)`;
     }
     if (value instanceof Error) {
-      const stack = value.stack.split(/\n/).filter(line => line);
-      return `Error ${value.message} ${stack[1]} ${stack[2]} ${stack[3]}...`;
+      return `Error ${value.message}`;
     }
     if (value instanceof Promise) {
       return 'Promise';

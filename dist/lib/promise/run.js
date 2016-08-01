@@ -29,22 +29,27 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function runPromise(promise, emitter) {
-  try {
-    var promised = promise.that();
-    emitter.emit(EVENTS.START, (0, _extends3.default)({}, promise, {
-      that: promised
-    }));
-    promised.then(function (result) {
-      (0, _walk2.default)(result, promise.assertions, function (report) {
-        emitter.emit(EVENTS.RESULT, { test: promise, report: report });
+  return new Promise(function (resolve) {
+    try {
+      var promised = promise.that();
+      emitter.emit(EVENTS.START, (0, _extends3.default)({}, promise, {
+        that: promised
+      }));
+      promised.then(function (result) {
+        (0, _walk2.default)(result, promise.assertions, function (report) {
+          emitter.emit(EVENTS.RESULT, { test: promise, report: report });
+        });
+        emitter.emit(EVENTS.END, promise);
+        resolve();
+      }).catch(function (error) {
+        (0, _walk2.default)(error, promise.assertions, function (report) {
+          emitter.emit(EVENTS.RESULT, { test: promise, report: report });
+        });
+        emitter.emit(EVENTS.END, promise);
+        resolve();
       });
-    }).catch(function (error) {
-      (0, _walk2.default)(error, promise.assertions, function (report) {
-        emitter.emit(EVENTS.RESULT, { test: promise, report: report });
-      });
-    });
-    emitter.emit(EVENTS.END, promise);
-  } catch (error) {
-    emitter.emit(EVENTS.ERROR, error);
-  }
+    } catch (error) {
+      emitter.emit(EVENTS.ERROR, error);
+    }
+  });
 }

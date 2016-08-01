@@ -127,8 +127,18 @@ function close() {
   }
 }
 
+function printTab(tab) {
+  var bg = arguments.length <= 1 || arguments[1] === undefined ? 'bgBlack' : arguments[1];
+
+  var print = '';
+  for (var cursor = 0; cursor < tab; cursor++) {
+    print += '  ';
+  }
+  return _colors2.default.bold[bg](print);
+}
+
 function onResult(result) {
-  var tab = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
+  var tab = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
 
   json.tests++;
   if (result.report.valid) {
@@ -136,7 +146,7 @@ function onResult(result) {
   } else {
     json.failed++;
   }
-  console.log(tab + _colors2.default[result.report.valid ? 'green' : 'red']((result.report.valid ? '√' : '✖') + ' ' + result.report.message));
+  console.log(printTab(tab) + _colors2.default.bold.white[result.report.valid ? 'green' : 'bgRed'](result.report.valid ? ' √ ' : ' ✖ '), _colors2.default[result.report.valid ? 'white' : 'yellow'](result.report.message));
 }
 
 exports.default = function () {
@@ -169,7 +179,7 @@ exports.default = function () {
                       json.files = _context.sent;
                       functions = (0, _getFunctions2.default)(json.files);
                       emitter = _run2.default.apply(undefined, (0, _toConsumableArray3.default)(functions));
-                      tab = '';
+                      tab = 0;
 
 
                       emitter.on(RUN_EVENTS.ERROR, function (error) {
@@ -191,27 +201,30 @@ exports.default = function () {
                       }).on(RUN_EVENTS.START, function () {
                         // console.log(tab + 'start');
                       }).on(BATCH_EVENTS.START, function (batch) {
-                        console.log(tab + _colors2.default.bold.bgBlue(batch.label));
-                        tab += '  ';
+                        console.log(printTab(tab), _colors2.default.underline(batch.label));
+                        tab++;
                       }).on(BATCH_EVENTS.END, function () {
-                        tab = tab.replace(/\s{2}$/, '');
-                        console.log();
+                        tab--;
                       }).on(BATCH_EVENTS.ERROR, function (batch, error) {
                         console.log('batch error', error.stack);
                       }).on(DESCRIBE_EVENTS.START, function (test) {
-                        console.log(tab + _colors2.default.bold(test.label), _colors2.default.italic((0, _format2.default)(test.that)));
-                        tab += '  ';
+                        console.log(printTab(tab), _colors2.default.bold(test.label), _colors2.default.italic((0, _format2.default)(test.that)));
+                        // console.log(
+                        //   tab + colors.bold(test.label),
+                        //   colors.italic(format(test.that))
+                        // );
+                        tab++;
                       }).on(DESCRIBE_EVENTS.END, function () {
-                        tab = tab.replace(/\s{2}$/, '');
+                        tab--;
                       }).on(DESCRIBE_EVENTS.RESULT, function (result) {
                         onResult(result, tab);
                       }).on(PROMISE_EVENTS.RESULT, function (result) {
                         onResult(result, tab);
                       }).on(EMITTER_EVENTS.ERROR, function (_emitter, error) {
-                        console.log('error');
+                        console.log('error', error);
                       }).on(EMITTER_EVENTS.START, function (_emitter) {
-                        console.log(tab + _colors2.default.bold(_emitter.label), _colors2.default.italic((0, _format2.default)(_emitter.that)));
-                        tab += '  ';
+                        console.log(printTab(tab), _colors2.default.bold(_emitter.label), _colors2.default.italic((0, _format2.default)(_emitter.that)));
+                        tab++;
                       }).on(EMITTER_EVENTS.END, function (_emitter) {}).on(EMITTER_EVENTS.START_EVENT, function (event) {
                         for (var _len = arguments.length, messages = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
                           messages[_key - 1] = arguments[_key];
@@ -219,12 +232,12 @@ exports.default = function () {
 
                         json.tests++;
                         json.passed++;
-                        console.log(tab + _colors2.default.green('√ event "' + event + '"'), _colors2.default.grey((0, _format2.default)(messages).replace(/^array /, '')));
-                        tab += '  ';
+                        console.log(printTab(tab), _colors2.default.green.bold(' √ ') + ('event "' + event + '"'), _colors2.default.grey((0, _format2.default)(messages).replace(/^array /, '')));
+                        tab++;
                       }).on(EMITTER_EVENTS.EVENT_MESSAGE, function (message) {
-                        console.log(tab, _colors2.default.grey((0, _format2.default)(message)));
+                        console.log(printTab(tab), _colors2.default.grey((0, _format2.default)(message)));
                       }).on(EMITTER_EVENTS.END_EVENT, function () {
-                        tab = tab.replace(/\s{6}$/, '');
+                        tab--;
                       }).on(EMITTER_EVENTS.RESULT, function (result) {
                         onResult(result, tab);
                       });
@@ -264,7 +277,7 @@ exports.default = function () {
     }, _callee2, this, [[0, 4]]);
   }));
 
-  function init(_x2) {
+  function init(_x3) {
     return _ref.apply(this, arguments);
   }
 

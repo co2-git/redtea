@@ -94,19 +94,28 @@ function close() {
   }
 }
 
-function onResult(result: RESULT, tab: string = '') {
+function printTab(tab: number, bg: string = 'bgBlack'): string {
+  let print = '';
+  for (let cursor = 0; cursor < tab; cursor++) {
+    print += '  ';
+  }
+  return colors.bold[bg](print);
+}
+
+function onResult(result: RESULT, tab: number = 0) {
   json.tests++;
   if (result.report.valid) {
     json.passed++;
   } else {
     json.failed++;
   }
-  console.log(tab + colors[
-    result.report.valid ? 'green' : 'red'
-  ](
-    (result.report.valid ? '√' : '✖') + ' ' +
-    result.report.message
-  ));
+  console.log(
+    printTab(tab) +
+    colors.bold.white[result.report.valid ? 'green' : 'bgRed'](
+      result.report.valid ? ' √ ' : ' ✖ '
+    ),
+    colors[result.report.valid ? 'white' : 'yellow'](result.report.message)
+  );
 }
 
 export default async function init(...files: string[]) {
@@ -121,7 +130,7 @@ export default async function init(...files: string[]) {
     json.files = await getFiles(...files);
     const functions: Function[] = getFunctions(json.files);
     const emitter: EventEmitter = run(...functions);
-    let tab = '';
+    let tab: number = 0;
 
     emitter
       .on(RUN_EVENTS.ERROR, (error: Error) => {
@@ -146,25 +155,31 @@ export default async function init(...files: string[]) {
         // console.log(tab + 'start');
       })
       .on(BATCH_EVENTS.START, (batch: Batch) => {
-        console.log(tab + colors.bold.bgBlue(batch.label));
-        tab += '  ';
+        console.log(
+          printTab(tab),
+          colors.underline(batch.label)
+        );
+        tab++;
       })
       .on(BATCH_EVENTS.END, () => {
-        tab = tab.replace(/\s{2}$/, '');
-        console.log();
+        tab--;
       })
       .on(BATCH_EVENTS.ERROR, (batch: Batch, error: Error) => {
         console.log('batch error', error.stack);
       })
       .on(DESCRIBE_EVENTS.START, (test: Describe) => {
-        console.log(
-          tab + colors.bold(test.label),
+        console.log(printTab(tab),
+          colors.bold(test.label),
           colors.italic(format(test.that))
         );
-        tab += '  ';
+        // console.log(
+        //   tab + colors.bold(test.label),
+        //   colors.italic(format(test.that))
+        // );
+        tab++;
       })
       .on(DESCRIBE_EVENTS.END, () => {
-        tab = tab.replace(/\s{2}$/, '');
+        tab--;
       })
       .on(DESCRIBE_EVENTS.RESULT, (result: Describe) => {
         onResult(result, tab);
@@ -173,14 +188,15 @@ export default async function init(...files: string[]) {
         onResult(result, tab);
       })
       .on(EMITTER_EVENTS.ERROR, (_emitter: Emitter, error: Error) => {
-        console.log('error');
+        console.log('error', error);
       })
       .on(EMITTER_EVENTS.START, (_emitter: Emitter) => {
         console.log(
-          tab + colors.bold(_emitter.label),
+          printTab(tab),
+          colors.bold(_emitter.label),
           colors.italic(format(_emitter.that))
         );
-        tab += '  ';
+        tab++;
       })
       .on(EMITTER_EVENTS.END, (_emitter: Emitter) => {
       })
@@ -188,16 +204,17 @@ export default async function init(...files: string[]) {
         json.tests++;
         json.passed++;
         console.log(
-          tab + colors.green(`√ event "${event}"`),
+          printTab(tab),
+          colors.green.bold(' √ ') + `event "${event}"`,
           colors.grey(format(messages).replace(/^array /, ''))
         );
-        tab += '  ';
+        tab++;
       })
       .on(EMITTER_EVENTS.EVENT_MESSAGE, (message: any) => {
-        console.log(tab, colors.grey(format(message)));
+        console.log(printTab(tab), colors.grey(format(message)));
       })
       .on(EMITTER_EVENTS.END_EVENT, () => {
-        tab = tab.replace(/\s{6}$/, '');
+        tab--;
       })
       .on(EMITTER_EVENTS.RESULT, (result: Emitter) => {
         onResult(result, tab);
