@@ -5,7 +5,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 var START = exports.START = 'start promise';
 var END = exports.END = 'end promise';
+var PROMISE = exports.PROMISE = 'promise';
 var RESULT = exports.RESULT = 'promise result';
 var ERROR = exports.ERROR = 'promise error';
 
-exports.default = [START, END, RESULT, ERROR];
+exports.default = [START, END, RESULT, PROMISE, ERROR];

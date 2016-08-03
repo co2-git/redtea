@@ -2,7 +2,7 @@
 
 export default function type(
     it: any,
-    _type: null | Function | Function[],
+    _type: ?Function|Function[],
     not : boolean = false
   ): boolean {
   if (Array.isArray(_type) && _type.length) {

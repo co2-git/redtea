@@ -32,7 +32,7 @@ var runAsync = function () {
 
           case 5:
             if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-              _context.next = 40;
+              _context.next = 60;
               break;
             }
 
@@ -58,7 +58,7 @@ var runAsync = function () {
             return (0, _run2.default)(result, emitter);
 
           case 14:
-            _context.next = 32;
+            _context.next = 52;
             break;
 
           case 16:
@@ -71,7 +71,7 @@ var runAsync = function () {
             return (0, _run4.default)(result, emitter);
 
           case 19:
-            _context.next = 32;
+            _context.next = 52;
             break;
 
           case 21:
@@ -84,7 +84,7 @@ var runAsync = function () {
             return (0, _run6.default)(result, emitter);
 
           case 24:
-            _context.next = 32;
+            _context.next = 52;
             break;
 
           case 26:
@@ -97,67 +97,119 @@ var runAsync = function () {
             return (0, _run8.default)(result, emitter);
 
           case 29:
-            _context.next = 32;
+            _context.next = 52;
             break;
 
           case 31:
-            throw new Error('Could not guess type of result ' + result.constructor.name);
+            if (!(result.constructor.name === 'Batch')) {
+              _context.next = 36;
+              break;
+            }
 
-          case 32:
-            _context.next = 37;
-            break;
+            _context.next = 34;
+            return (0, _run2.default)(result, emitter);
 
           case 34:
-            _context.prev = 34;
+            _context.next = 52;
+            break;
+
+          case 36:
+            if (!(result.constructor.name === 'Describe')) {
+              _context.next = 41;
+              break;
+            }
+
+            _context.next = 39;
+            return (0, _run4.default)(result, emitter);
+
+          case 39:
+            _context.next = 52;
+            break;
+
+          case 41:
+            if (!(result.constructor.name === 'Emitter')) {
+              _context.next = 46;
+              break;
+            }
+
+            _context.next = 44;
+            return (0, _run6.default)(result, emitter);
+
+          case 44:
+            _context.next = 52;
+            break;
+
+          case 46:
+            if (!(result.constructor.name === 'IsAPromise')) {
+              _context.next = 51;
+              break;
+            }
+
+            _context.next = 49;
+            return (0, _run8.default)(result, emitter);
+
+          case 49:
+            _context.next = 52;
+            break;
+
+          case 51:
+            throw new Error('Could not guess type of result ' + result.constructor.name);
+
+          case 52:
+            _context.next = 57;
+            break;
+
+          case 54:
+            _context.prev = 54;
             _context.t0 = _context['catch'](7);
 
             console.log(_context.t0.stack);
 
-          case 37:
+          case 57:
             _iteratorNormalCompletion = true;
             _context.next = 5;
             break;
 
-          case 40:
-            _context.next = 46;
+          case 60:
+            _context.next = 66;
             break;
 
-          case 42:
-            _context.prev = 42;
+          case 62:
+            _context.prev = 62;
             _context.t1 = _context['catch'](3);
             _didIteratorError = true;
             _iteratorError = _context.t1;
 
-          case 46:
-            _context.prev = 46;
-            _context.prev = 47;
+          case 66:
+            _context.prev = 66;
+            _context.prev = 67;
 
             if (!_iteratorNormalCompletion && _iterator.return) {
               _iterator.return();
             }
 
-          case 49:
-            _context.prev = 49;
+          case 69:
+            _context.prev = 69;
 
             if (!_didIteratorError) {
-              _context.next = 52;
+              _context.next = 72;
               break;
             }
 
             throw _iteratorError;
 
-          case 52:
-            return _context.finish(49);
+          case 72:
+            return _context.finish(69);
 
-          case 53:
-            return _context.finish(46);
+          case 73:
+            return _context.finish(66);
 
-          case 54:
+          case 74:
           case 'end':
             return _context.stop();
         }
       }
-    }, _callee, this, [[3, 42, 46, 54], [7, 34], [47,, 49, 53]]);
+    }, _callee, this, [[3, 62, 66, 74], [7, 54], [67,, 69, 73]]);
   }));
 
   return function runAsync(_x, _x2) {

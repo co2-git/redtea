@@ -18,11 +18,6 @@ import * as PROMISE_EVENTS from './promise/events';
 import * as EMITTER_EVENTS from './emitter/events';
 import type {REPORT} from '../config/types';
 
-type RESULT = {
-  test: Describe | Emitter | IsAPromise,
-  report: REPORT,
-};
-
 type JSON_REPORT = {
   version: string,
   status: ?number,
@@ -102,20 +97,27 @@ function printTab(tab: number, bg: string = 'bgBlack'): string {
   return colors.bold[bg](print);
 }
 
-function onResult(result: RESULT, tab: number = 0) {
+function onResult(
+    test: Describe|Batch|IsAPromise|Emitter,
+    report: REPORT,
+    tab: number = 0
+  ) {
   json.tests++;
-  if (result.report.valid) {
+  if (report.valid) {
     json.passed++;
   } else {
     json.failed++;
   }
   console.log(
     printTab(tab) +
-    colors.bold.white[result.report.valid ? 'green' : 'bgRed'](
-      result.report.valid ? ' √ ' : ' ✖ '
+    colors.bold.white[report.valid ? 'green' : 'bgRed'](
+      report.valid ? ' √ ' : ' ✖ '
     ),
-    colors[result.report.valid ? 'white' : 'yellow'](result.report.message)
+    colors[report.valid ? 'grey' : 'yellow'](report.message)
   );
+  if (report.error) {
+    console.log(colors.yellow(report.error.stack));
+  }
 }
 
 export default async function init(...files: string[]) {
@@ -155,10 +157,12 @@ export default async function init(...files: string[]) {
         // console.log(tab + 'start');
       })
       .on(BATCH_EVENTS.START, (batch: Batch) => {
+        console.log();
         console.log(
           printTab(tab),
           colors.underline(batch.label)
         );
+        console.log();
         tab++;
       })
       .on(BATCH_EVENTS.END, () => {
@@ -169,23 +173,43 @@ export default async function init(...files: string[]) {
       })
       .on(DESCRIBE_EVENTS.START, (test: Describe) => {
         console.log(printTab(tab),
-          colors.bold(test.label),
-          colors.italic(format(test.that))
+          colors.white(test.label),
+          colors.italic.grey(format(test.that))
         );
-        // console.log(
-        //   tab + colors.bold(test.label),
-        //   colors.italic(format(test.that))
-        // );
         tab++;
       })
       .on(DESCRIBE_EVENTS.END, () => {
         tab--;
       })
-      .on(DESCRIBE_EVENTS.RESULT, (result: Describe) => {
-        onResult(result, tab);
+      .on(DESCRIBE_EVENTS.RESULT, (describe: Describe, report: REPORT) => {
+        onResult(describe, report, tab);
       })
-      .on(PROMISE_EVENTS.RESULT, (result: IsAPromise) => {
-        onResult(result, tab);
+      .on(PROMISE_EVENTS.RESULT, (promise: Describe, report: REPORT) => {
+        onResult(promise, report, tab);
+      })
+      .on(PROMISE_EVENTS.START, (promise: IsAPromise) => {
+        console.log(
+          printTab(tab),
+          colors.white(promise.label)
+        );
+        tab++;
+      })
+      .on(PROMISE_EVENTS.PROMISE, (promise: IsAPromise, resolved: any) => {
+        console.log(printTab(tab), format(resolved));
+      })
+      .on(PROMISE_EVENTS.END, () => {
+        tab--;
+      })
+      .on(PROMISE_EVENTS.ERROR, (result: IsAPromise, error: Error) => {
+        json.tests++;
+        json.failed++;
+        console.log(
+          printTab(tab),
+          colors.white.bold.bgRed(' ✖ '),
+          colors.red(result.label),
+          colors.white.bold.bgRed(error.message)
+        );
+        console.log(colors.yellow(error.stack));
       })
       .on(EMITTER_EVENTS.ERROR, (_emitter: Emitter, error: Error) => {
         console.log('error', error);
@@ -193,13 +217,12 @@ export default async function init(...files: string[]) {
       .on(EMITTER_EVENTS.START, (_emitter: Emitter) => {
         console.log(
           printTab(tab),
-          colors.bold(_emitter.label),
+          colors.white(_emitter.label),
           colors.italic(format(_emitter.that))
         );
         tab++;
       })
-      .on(EMITTER_EVENTS.END, (_emitter: Emitter) => {
-      })
+      .on(EMITTER_EVENTS.END, (): 1 => 1)
       .on(EMITTER_EVENTS.START_EVENT, (event: string, ...messages: any[]) => {
         json.tests++;
         json.passed++;
@@ -216,8 +239,8 @@ export default async function init(...files: string[]) {
       .on(EMITTER_EVENTS.END_EVENT, () => {
         tab--;
       })
-      .on(EMITTER_EVENTS.RESULT, (result: Emitter) => {
-        onResult(result, tab);
+      .on(EMITTER_EVENTS.RESULT, (_emitter: Emitter, report: REPORT) => {
+        onResult(_emitter, report, tab);
       })
       ;
   } catch (error) {

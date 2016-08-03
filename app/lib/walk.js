@@ -5,74 +5,104 @@ import checkType from './type';
 import type {
   ASSERTIONS,
   REPORT,
+  WALKER,
 } from '../config/types';
 
-export default function walk(
-  that: any,
-  assertions: ASSERTIONS,
-  reporter: (report: REPORT) => void,
-  not: boolean = false
-) {
-  for (const type in assertions) {
-    switch (type) {
-    default: {
-      break;
-    }
-    case 'not': {
-      walk(that, assertions.not, reporter, true);
-      break;
-    }
-    case 'value': {
-      const valid = _.isEqual(that, assertions.value);
-      reporter({
-        type,
-        expected: not ? {not: assertions[type]} : assertions[type],
-        that,
-        valid: not ? !valid : valid,
-        message: `is ${not ? 'not ' : ''}${format(assertions.value)}`,
+function walkNot(walker: WALKER) {
+  walk({...walker, not: true});
+}
+
+function walkValue(walker: WALKER) {
+  const valid = _.isEqual(walker.that, walker.assertions.value);
+  walker.report({
+    type: 'value',
+    expected: walker.not ?
+      {not: walker.assertions.value} : walker.assertions.value,
+    that: walker.that,
+    valid: walker.not ? !valid : valid,
+    message: `${walker.ns} is ${walker.not ? 'not ' : ''}` +
+      format(walker.assertions.value),
+  });
+}
+
+function walkType(walker: WALKER) {
+  let isA;
+  if (Array.isArray(walker.assertions.type)) {
+    isA = walker.assertions.type[0] ?
+      walker.assertions.type[0].name : format(walker.assertions.type[0]);
+    isA = `array of ${isA}`;
+  } else {
+    isA = walker.assertions.type ?
+      walker.assertions.type.name : format(walker.assertions.type);
+  }
+  const an = /^(a|i|o|u|e)/i.test(isA) ? 'an' : 'a';
+  const valid = checkType(walker.that, walker.assertions.type);
+  walker.report({
+    type: 'type',
+    expected: walker.assertions.type,
+    that: walker.that,
+    valid: walker.not ? !valid : valid,
+    message: `is ${walker.not ? 'not ' : ''}${an} ${isA}`,
+    error: !valid && new TypeError(
+      `Expecting instance of ${format(walker.assertions.type)},` +
+        ` instead got ${format(walker.that)}`
+    ),
+  });
+}
+
+function walkTypes(walker: WALKER) {
+  const valid = (walker.assertions.types && walker.assertions.types.every(
+    (type: ?Function|Function[]): boolean => checkType(walker.that, type)
+  ) || false);
+  walker.report({
+    type: 'types',
+    expected: walker.assertions.types,
+    that: walker.that,
+    valid: walker.not ? !valid : valid,
+    message: `is ${walker.not ? 'not ' : ''} an instance of ` +
+      `${
+        walker.assertions.types.map(
+          (type: string): string => format(type).replace(/^function /, '')
+        ).join(', ')
+      }`,
+  });
+}
+
+function walkShape(walker: WALKER) {
+  const ns = walker.ns || 'object';
+  for (const key in walker.assertions.shape) {
+    const valid = (key in walker.that);
+    walker.report({
+      type: 'shape',
+      expected: key,
+      that: walker.that,
+      valid: walker.not ? !valid : valid,
+      message: `${ns} has key ${key}`,
+      error: !valid && new TypeError(`Expected ${format(walker.that)}.${key}`),
+    });
+    if (valid) {
+      walk({
+        ...walker,
+        that: walker.that[key],
+        assertions: walker.assertions.shape[key],
+        ns: `${ns}.${key}`,
       });
-      break;
     }
-    case 'type': {
-      let isA;
-      if (Array.isArray(assertions.type)) {
-        isA = assertions.type[0] ?
-          assertions.type[0].name : format(assertions.type[0]);
-        isA = `is an array of ${isA}`;
-      } else {
-        isA = assertions.type ?
-          assertions.type.name : format(assertions.type);
-      }
-      const an = /^(a|i|o|u|e)/i.test(isA) ? 'an' : 'a';
-      const valid = checkType(that, assertions.type);
-      reporter({
-        type,
-        expected: assertions.type,
-        that,
-        valid: not ? !valid : valid,
-        message: `is ${not ? 'not ' : ''}${an} ${isA}`,
-      });
-      break;
-    }
-    case 'types': {
-      const valid = assertions.types.every(type => checkType(that, type));
-      reporter({
-        type,
-        expected: assertions.types,
-        that,
-        valid: not ? !valid : valid,
-        message: `is ${not ? 'not ' : ''} an instance of ` +
-          `${
-            assertions.types.map(
-              type => format(type).replace(/^function /, '')
-            ).join(', ')
-          }`,
-      });
-      break;
-    }
-    case 'shape': {
-      console.log({that, assertions});
-    }
+  }
+}
+
+export default function walk(walker: WALKER = {not: false}) {
+  for (const type in walker.assertions) {
+    if (type === 'not') {
+      walkNot(walker);
+    } else if (type === 'value') {
+      walkValue(walker);
+    } else if (type === 'type') {
+      walkType(walker);
+    } else if (type === 'types') {
+      walkTypes(walker);
+    } else if (type === 'shape') {
+      walkShape(walker);
     }
   }
 }

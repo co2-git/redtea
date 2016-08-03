@@ -3,9 +3,17 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = runDescribe;
+exports.default = undefined;
+
+var _extends2 = require('babel-runtime/helpers/extends');
+
+var _extends3 = _interopRequireDefault(_extends2);
 
 var _events = require('events');
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
 
 var _is = require('./is');
 
@@ -25,8 +33,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function runDescribe(test, emitter) {
   emitter.emit(EVENTS.START, test);
-  (0, _walk2.default)(test.that, test.assertions, function (report) {
-    emitter.emit(EVENTS.RESULT, { test: test, report: report });
-  });
+  (0, _walk2.default)((0, _extends3.default)({}, _lodash2.default.pick(test, ['that', 'assertions']), {
+    report: function report(_report) {
+      emitter.emit(EVENTS.RESULT, test, _report);
+    }
+  }));
   emitter.emit(EVENTS.END, test);
 }
+exports.default = runDescribe;

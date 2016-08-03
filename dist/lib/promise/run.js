@@ -31,25 +31,47 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function runPromise(promise, emitter) {
   return new Promise(function (resolve) {
     try {
-      var promised = promise.that();
-      emitter.emit(EVENTS.START, (0, _extends3.default)({}, promise, {
-        that: promised
-      }));
-      promised.then(function (result) {
-        (0, _walk2.default)(result, promise.assertions, function (report) {
-          emitter.emit(EVENTS.RESULT, { test: promise, report: report });
+      (function () {
+        var promised = promise.that();
+        emitter.emit(EVENTS.START, (0, _extends3.default)({}, promise, {
+          that: promised
+        }));
+        var wait = promise.assertions.wait || 2500;
+        var timer = setTimeout(function () {
+          emitter.emit(EVENTS.ERROR, promise, new Error('Promise timed out'));
+          emitter.emit(EVENTS.END, promise);
+          resolve();
+        }, wait);
+        promised.then(function (result) {
+          clearTimeout(timer);
+          emitter.emit(EVENTS.PROMISE, promise, result);
+          (0, _walk2.default)({
+            that: result,
+            assertions: promise.assertions,
+            report: function report(_report) {
+              emitter.emit(EVENTS.RESULT, promise, _report);
+            }
+          });
+          emitter.emit(EVENTS.END, promise);
+          resolve();
+        }).catch(function (error) {
+          clearTimeout(timer);
+          emitter.emit(EVENTS.PROMISE, promise, error);
+          (0, _walk2.default)({
+            that: error,
+            assertions: promise.assertions,
+            report: function report(_report2) {
+              emitter.emit(EVENTS.RESULT, promise, _report2);
+            }
+          });
+          emitter.emit(EVENTS.END, promise);
+          resolve();
         });
-        emitter.emit(EVENTS.END, promise);
-        resolve();
-      }).catch(function (error) {
-        (0, _walk2.default)(error, promise.assertions, function (report) {
-          emitter.emit(EVENTS.RESULT, { test: promise, report: report });
-        });
-        emitter.emit(EVENTS.END, promise);
-        resolve();
-      });
+      })();
     } catch (error) {
-      emitter.emit(EVENTS.ERROR, error);
+      emitter.emit(EVENTS.ERROR, promise, error);
+      emitter.emit(EVENTS.END, promise);
+      resolve();
     }
   });
 }

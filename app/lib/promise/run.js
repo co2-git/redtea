@@ -16,23 +16,43 @@ export default function runPromise(
         ...promise,
         that: promised,
       });
+      const wait = promise.assertions.wait || 2500;
+      let timer = setTimeout(() => {
+        emitter.emit(EVENTS.ERROR, promise, new Error('Promise timed out'));
+        emitter.emit(EVENTS.END, promise);
+        resolve();
+      }, wait);
       promised
         .then((result: any) => {
-          walk(result, promise.assertions, (report: REPORT) => {
-            emitter.emit(EVENTS.RESULT, {test: promise, report});
+          clearTimeout(timer);
+          emitter.emit(EVENTS.PROMISE, promise, result);
+          walk({
+            that: result,
+            assertions: promise.assertions,
+            report: (report: REPORT) => {
+              emitter.emit(EVENTS.RESULT, promise, report);
+            }
           });
           emitter.emit(EVENTS.END, promise);
           resolve();
         })
         .catch((error: Error) => {
-          walk(error, promise.assertions, (report: REPORT) => {
-            emitter.emit(EVENTS.RESULT, {test: promise, report});
+          clearTimeout(timer);
+          emitter.emit(EVENTS.PROMISE, promise, error);
+          walk({
+            that: error,
+            assertions: promise.assertions,
+            report: (report: REPORT) => {
+              emitter.emit(EVENTS.RESULT, promise, report);
+            },
           });
           emitter.emit(EVENTS.END, promise);
           resolve();
         });
     } catch (error) {
-      emitter.emit(EVENTS.ERROR, error);
+      emitter.emit(EVENTS.ERROR, promise, error);
+      emitter.emit(EVENTS.END, promise);
+      resolve();
     }
   });
 }

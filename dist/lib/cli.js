@@ -137,16 +137,19 @@ function printTab(tab) {
   return _colors2.default.bold[bg](print);
 }
 
-function onResult(result) {
-  var tab = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
+function onResult(test, report) {
+  var tab = arguments.length <= 2 || arguments[2] === undefined ? 0 : arguments[2];
 
   json.tests++;
-  if (result.report.valid) {
+  if (report.valid) {
     json.passed++;
   } else {
     json.failed++;
   }
-  console.log(printTab(tab) + _colors2.default.bold.white[result.report.valid ? 'green' : 'bgRed'](result.report.valid ? ' √ ' : ' ✖ '), _colors2.default[result.report.valid ? 'white' : 'yellow'](result.report.message));
+  console.log(printTab(tab) + _colors2.default.bold.white[report.valid ? 'green' : 'bgRed'](report.valid ? ' √ ' : ' ✖ '), _colors2.default[report.valid ? 'grey' : 'yellow'](report.message));
+  if (report.error) {
+    console.log(_colors2.default.yellow(report.error.stack));
+  }
 }
 
 exports.default = function () {
@@ -201,31 +204,43 @@ exports.default = function () {
                       }).on(RUN_EVENTS.START, function () {
                         // console.log(tab + 'start');
                       }).on(BATCH_EVENTS.START, function (batch) {
+                        console.log();
                         console.log(printTab(tab), _colors2.default.underline(batch.label));
+                        console.log();
                         tab++;
                       }).on(BATCH_EVENTS.END, function () {
                         tab--;
                       }).on(BATCH_EVENTS.ERROR, function (batch, error) {
                         console.log('batch error', error.stack);
                       }).on(DESCRIBE_EVENTS.START, function (test) {
-                        console.log(printTab(tab), _colors2.default.bold(test.label), _colors2.default.italic((0, _format2.default)(test.that)));
-                        // console.log(
-                        //   tab + colors.bold(test.label),
-                        //   colors.italic(format(test.that))
-                        // );
+                        console.log(printTab(tab), _colors2.default.white(test.label), _colors2.default.italic.grey((0, _format2.default)(test.that)));
                         tab++;
                       }).on(DESCRIBE_EVENTS.END, function () {
                         tab--;
-                      }).on(DESCRIBE_EVENTS.RESULT, function (result) {
-                        onResult(result, tab);
-                      }).on(PROMISE_EVENTS.RESULT, function (result) {
-                        onResult(result, tab);
+                      }).on(DESCRIBE_EVENTS.RESULT, function (describe, report) {
+                        onResult(describe, report, tab);
+                      }).on(PROMISE_EVENTS.RESULT, function (promise, report) {
+                        onResult(promise, report, tab);
+                      }).on(PROMISE_EVENTS.START, function (promise) {
+                        console.log(printTab(tab), _colors2.default.white(promise.label));
+                        tab++;
+                      }).on(PROMISE_EVENTS.PROMISE, function (promise, resolved) {
+                        console.log(printTab(tab), (0, _format2.default)(resolved));
+                      }).on(PROMISE_EVENTS.END, function () {
+                        tab--;
+                      }).on(PROMISE_EVENTS.ERROR, function (result, error) {
+                        json.tests++;
+                        json.failed++;
+                        console.log(printTab(tab), _colors2.default.white.bold.bgRed(' ✖ '), _colors2.default.red(result.label), _colors2.default.white.bold.bgRed(error.message));
+                        console.log(_colors2.default.yellow(error.stack));
                       }).on(EMITTER_EVENTS.ERROR, function (_emitter, error) {
                         console.log('error', error);
                       }).on(EMITTER_EVENTS.START, function (_emitter) {
-                        console.log(printTab(tab), _colors2.default.bold(_emitter.label), _colors2.default.italic((0, _format2.default)(_emitter.that)));
+                        console.log(printTab(tab), _colors2.default.white(_emitter.label), _colors2.default.italic((0, _format2.default)(_emitter.that)));
                         tab++;
-                      }).on(EMITTER_EVENTS.END, function (_emitter) {}).on(EMITTER_EVENTS.START_EVENT, function (event) {
+                      }).on(EMITTER_EVENTS.END, function () {
+                        return 1;
+                      }).on(EMITTER_EVENTS.START_EVENT, function (event) {
                         for (var _len = arguments.length, messages = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
                           messages[_key - 1] = arguments[_key];
                         }
@@ -238,8 +253,8 @@ exports.default = function () {
                         console.log(printTab(tab), _colors2.default.grey((0, _format2.default)(message)));
                       }).on(EMITTER_EVENTS.END_EVENT, function () {
                         tab--;
-                      }).on(EMITTER_EVENTS.RESULT, function (result) {
-                        onResult(result, tab);
+                      }).on(EMITTER_EVENTS.RESULT, function (_emitter, report) {
+                        onResult(_emitter, report, tab);
                       });
 
                     case 9:

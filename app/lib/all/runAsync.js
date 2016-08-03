@@ -30,6 +30,14 @@ async function runAsync(emitter: EventEmitter, ...testers: Function[]) {
         await runEmitter(result, emitter);
       } else if (result instanceof IsAPromise) {
         await runPromise(result, emitter);
+      } else if (result.constructor.name === 'Batch') {
+        await runBatch(result, emitter);
+      } else if (result.constructor.name === 'Describe') {
+        await runDescribe(result, emitter);
+      } else if (result.constructor.name === 'Emitter') {
+        await runEmitter(result, emitter);
+      } else if (result.constructor.name === 'IsAPromise') {
+        await runPromise(result, emitter);
       } else {
         throw new Error(
           'Could not guess type of result ' + result.constructor.name

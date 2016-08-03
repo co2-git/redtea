@@ -3,6 +3,8 @@
 export
 type ASSERTION_TYPE = 'not'
   | 'type'
+  | 'types'
+  | 'shape'
   | 'value'
   | 'emits';
 
@@ -16,9 +18,13 @@ type EVENTS = {
 export
 type ASSERTIONS = {
   value?: any,
-  type?: ?Function,
+  type?: ?Function|Function[],
+  types?: ?Function[],
   not?: ASSERTIONS,
   emits?: EVENTS,
+  shape?: {
+    [key: string]: ASSERTIONS,
+  },
 };
 
 export
@@ -62,4 +68,13 @@ type REPORT_CHECKER = {
   that?: any,
   expected?: any,
   valid?: boolean,
+};
+
+export
+type WALKER = {
+  that: any,
+  assertions: ASSERTIONS,
+  not: boolean,
+  report: (report: REPORT) => void,
+  ns: string,
 };
