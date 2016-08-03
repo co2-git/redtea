@@ -239,7 +239,7 @@ exports.default = function () {
                         console.log(printTab(tab), _colors2.default.white(_emitter.label), _colors2.default.italic((0, _format2.default)(_emitter.that)));
                         tab++;
                       }).on(EMITTER_EVENTS.END, function () {
-                        return 1;
+                        tab--;
                       }).on(EMITTER_EVENTS.START_EVENT, function (event) {
                         for (var _len = arguments.length, messages = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
                           messages[_key - 1] = arguments[_key];

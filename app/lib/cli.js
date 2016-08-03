@@ -222,7 +222,9 @@ export default async function init(...files: string[]) {
         );
         tab++;
       })
-      .on(EMITTER_EVENTS.END, (): 1 => 1)
+      .on(EMITTER_EVENTS.END, () => {
+        tab--;
+      })
       .on(EMITTER_EVENTS.START_EVENT, (event: string, ...messages: any[]) => {
         json.tests++;
         json.passed++;
