@@ -28,6 +28,7 @@ function walkNot(walker) {
   walk((0, _extends3.default)({}, walker, { not: true }));
 }
 
+
 function walkValue(walker) {
   var valid = _lodash2.default.isEqual(walker.that, walker.assertions.value);
   walker.report({

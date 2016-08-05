@@ -9,10 +9,14 @@ type ASSERTION_TYPE = 'not'
   | 'emits';
 
 export
+type EVENT = ASSERTIONS & {
+  wait?: number,
+  messages?: ASSERTIONS[],
+};
+
+export
 type EVENTS = {
-  [event: string]: {
-    wait?: number
-  } & ASSERTIONS
+  [event: string]: EVENT,
 };
 
 export
@@ -22,6 +26,9 @@ type ASSERTIONS = {
   types?: ?Function[],
   not?: ASSERTIONS,
   emits?: EVENTS,
+  emitsNot?: {
+    [event: string]: number,
+  },
   shape?: {
     [key: string]: ASSERTIONS,
   },

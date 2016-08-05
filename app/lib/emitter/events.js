@@ -6,7 +6,7 @@ export const RESULT = 'emitter result';
 export const START_EVENT = 'start event';
 export const END_EVENT = 'end event';
 export const EVENT_MESSAGE = 'event message';
-export const ERROR = 'error';
+export const ERROR = 'emitter error';
 
 export default [
   START,

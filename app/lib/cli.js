@@ -212,7 +212,13 @@ export default async function init(...files: string[]) {
         console.log(colors.yellow(error.stack));
       })
       .on(EMITTER_EVENTS.ERROR, (_emitter: Emitter, error: Error) => {
-        console.log('error', error);
+        json.tests++;
+        json.failed++;
+        console.log(
+          printTab(tab),
+          colors.white.bold.bgRed(' ✖ '),
+          colors.yellow(error.message)
+        );
       })
       .on(EMITTER_EVENTS.START, (_emitter: Emitter) => {
         console.log(

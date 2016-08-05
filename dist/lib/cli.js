@@ -97,6 +97,7 @@ var json = {
   all: []
 };
 
+
 process.on('exit', function () {
   if (!json.done) {
     console.log(_colors2.default.red('✖ Tests could not complete!'));
@@ -234,7 +235,9 @@ exports.default = function () {
                         console.log(printTab(tab), _colors2.default.white.bold.bgRed(' ✖ '), _colors2.default.red(result.label), _colors2.default.white.bold.bgRed(error.message));
                         console.log(_colors2.default.yellow(error.stack));
                       }).on(EMITTER_EVENTS.ERROR, function (_emitter, error) {
-                        console.log('error', error);
+                        json.tests++;
+                        json.failed++;
+                        console.log(printTab(tab), _colors2.default.white.bold.bgRed(' ✖ '), _colors2.default.yellow(error.message));
                       }).on(EMITTER_EVENTS.START, function (_emitter) {
                         console.log(printTab(tab), _colors2.default.white(_emitter.label), _colors2.default.italic((0, _format2.default)(_emitter.that)));
                         tab++;

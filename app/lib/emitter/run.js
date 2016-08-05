@@ -2,109 +2,67 @@
 import {EventEmitter} from 'events';
 import Emitter from './is';
 import * as EVENTS from './events';
-import walk from '../walk';
-import type {REPORT} from '../../config/types';
-
-function assertEvent(
-    emitter: Emitter,
-    watcher: EventEmitter,
-    observer: EventEmitter,
-    event: string,
-    eventsTriggered: string[],
-    eventsNotTriggered: string[],
-    done: Function,
-  ) {
-  const wait = ('wait' in emitter.assertions.emits[event])
-    ? emitter.assertions.emits[event].wait : 2500;
-  let timeout = setTimeout(() => {
-    try {
-      observer.emit(EVENTS.RESULT, emitter, {
-        type: 'event',
-        expected: event,
-        that: null,
-        valid: false,
-        message:
-          `event "${event}" never triggered after ${wait} milliseconds`,
-      });
-      eventsNotTriggered.push(event);
-      done();
-    } catch (error) {
-      observer.emit(EVENTS.ERROR, emitter, error);
-    }
-  }, wait);
-  watcher.on(event, (...messages: any[]) => {
-    clearTimeout(timeout);
-    observer.emit(EVENTS.START_EVENT, event, ...messages);
-    if (Array.isArray(emitter.assertions.emits[event].messages)) {
-      emitter.assertions.emits[event].messages
-        .forEach((message: any, index: number) => {
-          observer.emit(EVENTS.EVENT_MESSAGE, messages[index]);
-          walk({
-            that: messages[index],
-            assertions: message,
-            report: (report: REPORT) => {
-              observer.emit(EVENTS.RESULT, emitter, report);
-            },
-          });
-        });
-    } else {
-      messages.forEach((message: any) => {
-        observer.emit(EVENTS.EVENT_MESSAGE, message);
-        walk({
-          that: message,
-          assertions: emitter.assertions.emits[event].messages,
-          report: (report: REPORT) => {
-            observer.emit(EVENTS.RESULT, emitter, report);
-          },
-        });
-      });
-    }
-    observer.emit(EVENTS.END_EVENT, event, ...messages);
-    eventsTriggered.push(event);
-    done();
-  });
-}
+import runEvent from './runEvent';
+import runNonEvent from './runNonEvent';
 
 export default function runEmitter(
     emitter: Emitter,
     observer: EventEmitter
   ): Promise<void> {
-  return new Promise((resolve: Function) => {
+  return new Promise(async (resolve: Function, reject: Function) => {
     try {
-      const watcher = emitter.that();
+      // Disclose emitter from function
+      const watcher: EventEmitter = emitter.that();
+      // Exit if disclosed return is not an emitter
+      if (!(watcher instanceof EventEmitter)) {
+        throw new Error('Can not watch events from a non-emitter');
+      }
+      // Tell observer we began testing emitter
       observer.emit(EVENTS.START, {
         ...emitter,
         that: watcher,
       });
-      if (emitter.assertions.emits) {
-        const expectedNumberOfEvents: number =
-          Object.keys(emitter.assertions.emits).length;
-        const eventsTriggered: string[] = [];
-        const eventsNotTriggered: string[] = [];
-        const done: Function = () => {
-          if (
-            (eventsTriggered.length + eventsNotTriggered.length)
-              === expectedNumberOfEvents
-          ) {
-            observer.emit(EVENTS.END, emitter);
-            resolve();
-          }
-        };
-        for (const event in emitter.assertions.emits) {
-          assertEvent(
-            emitter,
-            watcher,
-            observer,
-            event,
-            eventsTriggered,
-            eventsNotTriggered,
-            done,
-          );
-        }
+      // Internal counters
+      const {emits, emitsNot} = emitter.assertions;
+      // Walk each event
+      const promises = [];
+      if (emits) {
+        // Events to watch
+        promises.push(
+          Promise.all(
+            Object.keys(emits)
+              .map((event: string): Promise<boolean|Error> => runEvent(
+                emitter,
+                watcher,
+                observer,
+                emits[event],
+                event,
+              ))
+          )
+        );
       }
+      // Events that are not supposed to trigger
+      if (emitsNot) {
+        promises.push(
+          Promise.all(
+            Object.keys(emitsNot)
+              .map((event: string): Promise<boolean|Error> => runNonEvent(
+                emitter,
+                watcher,
+                observer,
+                event,
+                emitsNot[event],
+              ))
+          )
+        );
+      }
+      await Promise.all(promises);
+      // Return results
+      observer.emit(EVENTS.END, emitter);
+      resolve();
     } catch (error) {
-      console.log(error);
       observer.emit(EVENTS.ERROR, emitter, error);
+      reject(error);
     }
   });
 }

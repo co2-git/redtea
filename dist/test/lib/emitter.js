@@ -13,6 +13,7 @@ var _emitter3 = _interopRequireDefault(_emitter2);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var label1 = 'hello';
+
 var _emitter1 = function _emitter1() {
   return new _events.EventEmitter();
 };

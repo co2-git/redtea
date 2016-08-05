@@ -43,6 +43,7 @@ function flattenArray(arr) {
   }, []);
 }
 
+
 function scandir(dir) {
   return new Promise(function (resolve, reject) {
     var files = [];

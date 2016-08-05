@@ -18,6 +18,7 @@ if (process.argv[2] === '--version') {
   process.exit(0);
 }
 
+
 var props = {};
 var flags = [];
 var files = [];
